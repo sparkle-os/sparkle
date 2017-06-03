@@ -14,7 +14,10 @@ long_start:
 	extern kernel_main
 	call kernel_main
 
-	; print `OKAY` to screen
-	mov rax, 0x2f592f412f4b2f4f
+	; print `EXIT` to screen
+	mov rax, 0x2f542f492f582f45
 	mov qword [0xb8000], rax
+
+.halted
 	hlt
+	jmp .halted ; in case some interrupt kicks us out of hlt, jump back and hlt again
