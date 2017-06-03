@@ -17,12 +17,9 @@ start:
 
 	; load the 64-bit gdt
 	lgdt [gdt64.pointer]
+
+	; jump into the 64-bit boot stub code
 	jmp gdt64.code:long_start
-
-	; print OK
-	; mov dword [0xb8000], 0x2f4b2f4f
-
-	hlt ; halt
 
 ; Checks that we were actually loaded by a Multiboot-compatible system
 check_multiboot:
