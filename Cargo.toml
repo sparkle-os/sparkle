@@ -1,0 +1,11 @@
+[package]
+name = "sparkle_os"
+version = "0.1.0"
+authors = ["Erin <erin@hashbang.sh>"]
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+rlibc = "1.0"
+x86 = "0.8"
