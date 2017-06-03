@@ -1,16 +1,31 @@
+#![feature(asm)]
+#![feature(unique)]
+#![feature(const_fn)]
 #![feature(lang_items)]
 #![no_std]
 
 extern crate rlibc;
+extern crate spin;
+extern crate volatile;
+
+mod arch;
+#[macro_use]
+mod macros;
+
+use arch::x86_64::device::vga_console;
 
 #[no_mangle]
 pub extern fn kernel_main() {
-	//////////// !!! WARNING !!! ////////////
-	// WE HAVE AN EXTREMELY SMALL STACK    //
-	// AND NO GUARD PAGE                   //
-	/////////////////////////////////////////
+    //////////// !!! WARNING !!! ////////////
+    // WE HAVE AN EXTREMELY SMALL STACK    //
+    // AND NO GUARD PAGE                   //
+    /////////////////////////////////////////
 
-	loop {}	
+    vga_console::WRITER.lock().clear_screen();
+    println!("Hello world!");
+
+
+    loop {}
 }
 
 #[lang = "eh_personality"]
@@ -23,6 +38,6 @@ pub extern fn panic_fmt() -> ! {loop{}}
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {
-	// we should hlt here
-	loop {}
+    // we should hlt here
+    loop {}
 }
