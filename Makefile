@@ -6,7 +6,6 @@ rs_kernel := target/$(rs_target)/debug/libsparkle_os.a
 
 asm_src := $(wildcard src/arch/$(arch)/*.asm)
 asm_obj := $(patsubst src/arch/$(arch)/%.asm, build/$(arch)/%.o, $(asm_src))
-rs_src := $(wildcard src/*.rs)
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
 
@@ -35,7 +34,8 @@ $(iso): $(kernel)
 $(kernel): $(asm_obj) $(rs_kernel)
 	ld -n --gc-sections -T $(linker_script) -o $(kernel) $^
 
-$(rs_kernel): $(rs_src)
+.PHONY: $(rs_kernel) # always run xargo
+$(rs_kernel):
 	xargo build --target $(rs_target)
 
 build/$(arch)/%.o: src/arch/$(arch)/%.asm
