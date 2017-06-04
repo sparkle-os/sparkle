@@ -4,6 +4,8 @@
 #![feature(lang_items)]
 #![no_std]
 
+#[macro_use]
+extern crate log;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
@@ -12,6 +14,7 @@ mod arch;
 #[macro_use]
 mod macros;
 mod misc;
+mod logger;
 
 use arch::x86_64::device::vga_console;
 
@@ -25,6 +28,7 @@ pub extern fn kernel_main() {
     vga_console::WRITER.lock().clear_screen();
     println!("--- Sparkle v{} booting! ---", ::misc::VERSION);
 
+    logger::init().expect("Logger failed to launch!");
 
 
     loop {}
