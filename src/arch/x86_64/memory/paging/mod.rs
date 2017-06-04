@@ -1,4 +1,4 @@
-//! Paging subsystem.
+//! Paging subsystem. *Note: uses recursive mapping.*
 //!
 //! Extremely ripped off from Phil Oppermann's tutorials, because I don't feel like writing
 //! a paging system off the top of my head today.
