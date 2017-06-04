@@ -89,6 +89,11 @@ check_long_mode:
 	jmp error
 
 setup_ptables:
+	; p4[511] -> p4 (recursive!)
+	mov eax, p4_table
+	or eax, 0b11 ; present + writable
+	mov [p4_table + 511*8], eax
+
 	; p4[0] -> p3
 	mov eax, p3_table
 	or eax, 0b11 ; present + writable
