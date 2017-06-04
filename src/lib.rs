@@ -51,6 +51,5 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {
-    // we should hlt here
-    loop {}
+    unsafe{loop{x86::shared::halt();}};
 }
