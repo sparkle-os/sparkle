@@ -3,12 +3,15 @@
 //! Extremely ripped off from Phil Oppermann's tutorials, because I don't feel like writing
 //! a paging system off the top of my head today.
 
+use core::ops::{Deref, DerefMut};
+use multiboot2::BootInformation;
 use super::PAGE_SIZE;
 use super::{Frame, FrameAllocator};
 
 mod entry;
 mod table;
 mod mapper;
+mod temporary_page;
 
 use self::entry::*;
 use self::table::{Table, Level4};
@@ -146,6 +149,49 @@ impl Page {
     fn p1_index(&self) -> usize {
         (self.index >> 0) & 0o777
     }
+}
+
+/// Remap the kernel
+pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
+        where A: FrameAllocator {
+
+    let mut scratch_page = TemporaryPage::new(Page { index: 0xabadcafe },
+        allocator);
+
+    let mut active_table = unsafe {ActivePageTable::new()};
+    let mut new_table = {
+        let frame = allocator.alloc_frame()
+            .expect("Attempted to allocate a frame for a new page table, but no frames are available!");
+        InactivePageTable::new(frame, &mut active_table, &mut scratch_page)
+    };
+
+    active_table.with(&mut new_table, &mut scratch_page, |mapper| {
+        let elf_sections_tag = boot_info.elf_sections_tag()
+            .expect("ELF sections tag required!");
+        for section in elf_sections_tag.sections() {
+            if !section.is_allocated() {
+                // section is not loaded to memory
+                continue;
+            }
+
+            assert!(section.start_address() % PAGE_SIZE == 0, "ELF sections must be page-aligned!");
+            debug!("Mapping section at addr: {:#x}, size: {:#x}",
+                section.addr, section.size);
+
+            let flags = WRITABLE;
+            let start_frame = Frame::containing_address(section.start_address());
+            let end_frame = Frame::containing_address(section.end_address() - 1);
+            for frame in Frame::range_inclusive(start_frame, end_frame) {
+                mapper.identity_map(frame, flags, allocator);
+            }
+        }
+
+        let vga_buffer_frame = Frame::containing_address(0xb8000);
+        mapper.identity_map(vga_buffer_frame, WRITABLE, allocator);
+    });
+
+    let old_table = active_table.switch(new_table);
+    info!("Successfully switched to new page table.");
 }
 
 /// Temporary function to test paging

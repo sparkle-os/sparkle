@@ -63,8 +63,9 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
         kernel_start as usize, kernel_end as usize, multiboot_start,
         multiboot_end, memory_map_tag.memory_areas());
 
-    memory::test_paging(&mut frame_allocator);
-    println!("-- memory paging test finished --");
+    memory::remap_kernel(&mut frame_allocator, boot_info);
+
+    println!("-- remap_kernel finished! --");
 
     loop {}
 }

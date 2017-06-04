@@ -7,7 +7,7 @@ mod paging;
 
 pub use self::area_frame_allocator::AreaFrameAllocator;
 
-pub use self::paging::test_paging;
+pub use self::paging::remap_kernel;
 
 /// The physical size of each frame.
 pub const PAGE_SIZE: usize = 4096;
