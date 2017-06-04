@@ -8,6 +8,9 @@ start:
 	; (the stack grows downwards)
 	mov esp, stack_top
 
+	; copy the Multiboot info pointer to edi
+	mov edi, ebx
+
 	call check_multiboot
 	call check_cpuid
 	call check_long_mode

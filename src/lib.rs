@@ -10,6 +10,7 @@ extern crate rlibc;
 extern crate spin;
 extern crate volatile;
 extern crate x86;
+extern crate multiboot2;
 
 mod arch;
 #[macro_use]
@@ -20,7 +21,7 @@ mod logger;
 use arch::x86_64::device::vga_console;
 
 #[no_mangle]
-pub extern fn kernel_main() {
+pub extern fn kernel_main(multiboot_info_pointer: usize) {
     //////////// !!! WARNING !!! ////////////
     // THE STACK IS LARGER NOW, BUT        //
     // WE STILL HAVE NO GUARD PAGE         //
@@ -31,6 +32,29 @@ pub extern fn kernel_main() {
 
     logger::init().expect("Logger failed to launch!");
 
+    let boot_info = unsafe {multiboot2::load(multiboot_info_pointer)};
+    let memory_map_tag = boot_info.memory_map_tag()
+        .expect("multiboot: Memory map tag required");
+    let elf_sections_tag = boot_info.elf_sections_tag()
+        .expect("multiboot: ELF sections tag required");
+
+    println!("memory areas:");
+    for area in memory_map_tag.memory_areas() {
+        println!("  start: 0x{:x}, length: 0x{:x}",
+            area.base_addr, area.length);
+    }
+    /*debug!("kernel sections:");
+    for section in elf_sections_tag.sections() {
+        debug!("  start: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
+            section.addr, section.size, section.flags);
+    }*/
+
+    let kernel_start = elf_sections_tag.sections().map(|s| s.addr)
+        .min().unwrap();
+    let kernel_end = elf_sections_tag.sections().map(|s| s.addr + s.size)
+        .max().unwrap();
+    let multiboot_start = multiboot_info_pointer;
+    let multiboot_end = multiboot_start + (boot_info.total_size as usize);
 
     loop {}
 }
