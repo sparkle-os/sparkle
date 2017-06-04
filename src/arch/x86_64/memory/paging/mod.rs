@@ -90,11 +90,26 @@ impl ActivePageTable {
     }
 }
 
+/// Owns an inactive P4 table.
+pub struct InactivePageTable {
+    p4_frame: Frame,
+}
 
+impl InactivePageTable {
+    pub fn new(frame: Frame, active_table: &mut ActivePageTable, temporary_page: &mut TemporaryPage)
+            -> InactivePageTable {
+        {
+            let table = temporary_page.map_table_frame(frame.clone(), active_table);
 
+            // zero the new inactive page table
+            table.zero();
 
+            // set up a recursive mapping for this table
+            table[511].set(frame.clone(), PRESENT | WRITABLE);
         }
+        temporary_page.unmap(active_table);
 
+        InactivePageTable { p4_frame: frame }
     }
 }
 
