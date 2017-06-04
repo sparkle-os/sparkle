@@ -30,6 +30,13 @@ impl Frame {
     fn start_address(&self) -> usize {
         self.index * PAGE_SIZE
     }
+
+    /// Clones the Frame; we implement this instead of deriving Clone since deriving clone
+    /// makes `.clone()` public, which would be illogical here (frames should not be cloned by end-users,
+    /// as that could be used to cause, *e.g.*, double-free errors with the `FrameAllocator`).
+    fn clone(&self) -> Frame {
+        Frame { index: self.index }
+    }
 }
 
 /// A trait which can be implemented by any frame allocator, to make the frame allocation system
