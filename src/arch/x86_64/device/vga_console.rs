@@ -4,6 +4,7 @@ use core::fmt;
 use core::ptr::Unique;
 use spin::Mutex;
 use volatile::Volatile;
+use x86::shared::io;
 
 pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
     column_pos: 0, row_pos: 0,
@@ -112,6 +113,18 @@ impl Writer {
         self.style
     }
 
+    fn move_cursor(&mut self, row: usize, col: usize) {
+        let pos: u16 = ((row * 80) + col) as u16;
+        // Lovingly ripped off from wiki.osdev.org/Text_Mode_Cursor
+        unsafe {
+            io::outb(0x3d4, 0x0F);
+            io::outb(0x3d5, (pos & 0xff) as u8);
+
+            io::outb(0x3d4, 0x0e);
+            io::outb(0x3d5, ((pos>>8) & 0xff) as u8);
+        }
+    }
+
     fn new_line(&mut self) {
         self.column_pos = 0;
         self.row_pos += 1;
@@ -151,6 +164,10 @@ impl fmt::Write for Writer {
         for byte in s.bytes() {
             self.write_byte(byte);
         }
+
+        let row = self.row_pos;
+        let col = self.column_pos;
+        self.move_cursor(row, col);
 
         Ok(())
     }
