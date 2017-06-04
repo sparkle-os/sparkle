@@ -10,6 +10,14 @@ SECTIONS {
 
 	.text : {
 		/* Kernel code */
-		*(.text)
+		*(.text .text.*) /* .text.* ensures that all small .text fragments are linked together */
+	}
+
+	/* ensure small fragments in .rodata and .rel.ro are linked together */
+	.rodata : {
+		*(.rodata .rodata.*)
+	}
+	.data.rel.ro : {
+		*(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*)
 	}
 }
