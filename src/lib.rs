@@ -39,7 +39,14 @@ pub extern fn kernel_main() {
 pub extern fn eh_personality() {}
 #[lang = "panic_fmt"]
 #[no_mangle]
-pub extern fn panic_fmt() -> ! {loop{}}
+pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
+    vga_console::WRITER.lock().set_style(vga_console::CharStyle::new(vga_console::Color::Black, vga_console::Color::Red));
+    println!();
+    println!("!!! PANIC in {} on line {} !!!", file, line);
+    println!("  {}", fmt);
+
+    unsafe{loop{x86::shared::halt();}};
+}
 
 #[allow(non_snake_case)]
 #[no_mangle]
