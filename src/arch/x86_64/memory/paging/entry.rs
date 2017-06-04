@@ -1,3 +1,5 @@
+//! Page table entry (meta)data
+
 use arch::x86_64::memory::Frame;
 
 pub struct Entry(u64);
@@ -27,7 +29,8 @@ impl Entry {
 
     pub fn set(&mut self, frame: Frame, flags: EntryFlags) {
         // Frame physical address must be page-aligned and smaller than 2^52
-        assert!(frame.start_address() & !0x000fffff_fffff000 == 0);
+        assert!(frame.start_address() & !0x000fffff_fffff000 == 0,
+            "Frame physical addresses must be page-aligned and smaller than 2^52!");
 
         self.0 = (frame.start_address() as u64) | flags.bits();
     }
