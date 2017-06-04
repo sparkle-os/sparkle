@@ -12,6 +12,8 @@ mod mapper;
 
 use self::entry::*;
 use self::table::{Table, Level4};
+use self::temporary_page::TemporaryPage;
+use self::mapper::Mapper;
 
 /// Upper bound on entries per page table
 const ENTRY_COUNT: usize = 512;
@@ -40,18 +42,53 @@ impl ActivePageTable {
         }
     }
 
+    /// Executes a closure, with a different page table recursively mapped
+    pub fn with<F>(&mut self, table: &mut InactivePageTable, scratch_page: &mut TemporaryPage, f: F)
+            where F: FnOnce(&mut Mapper) {
+        use x86::shared::{tlb, control_regs};
 
+        {
+            // Backup the original P4 pointer
+            let backup = Frame::containing_address(
+                unsafe {control_regs::cr3()}
+            );
 
+            // Map a scratch page to the current p4 table
+            let p4_table = scratch_page.map_table_frame(backup.clone(), self);
 
+            // Overwrite main P4 recursive mapping
+            self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE);
+            unsafe {tlb::flush_all();} // flush *all* TLBs to prevent fuckiness
 
+            // Execute f in context of the new page table
+            f(self);
 
+            // Restore the original pointer to P4
+            p4_table[511].set(backup, PRESENT | WRITABLE);
+            unsafe {tlb::flush_all();} // prevent fuckiness
+        }
 
+        scratch_page.unmap(self);
+    }
 
+    /// Switches to a new [`InactivePageTable`], making it active.
+    ///
+    /// Note: We don't need to flush the TLB here, as the CPU automatically flushes
+    /// the TLB when the P4 table is switched.
+    pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
+        use x86::shared::{control_regs};
 
+        let old_table = InactivePageTable {
+            p4_frame: Frame::containing_address(unsafe {control_regs::cr3()}),
         };
 
+        unsafe {
+            control_regs::cr3_write(new_table.p4_frame.start_address());
+        }
 
+        old_table
     }
+}
 
 
 
