@@ -14,11 +14,11 @@ extern crate bitflags;
 extern crate x86;
 extern crate multiboot2;
 
-mod arch;
 #[macro_use]
-mod macros;
+pub mod macros;
 mod misc;
 mod logger;
+mod arch;
 
 use arch::x86_64::device::vga_console;
 use arch::x86_64::memory;
@@ -63,8 +63,8 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
         kernel_start as usize, kernel_end as usize, multiboot_start,
         multiboot_end, memory_map_tag.memory_areas());
 
-    info!("allocated frame @ 0x{:?}", frame_allocator.alloc_frame());
-
+    memory::test_paging(&mut frame_allocator);
+    println!("-- memory paging test finished --");
 
     loop {}
 }
