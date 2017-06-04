@@ -36,7 +36,7 @@ pub enum Color {
 #[derive(Clone, Copy, Debug)]
 pub struct CharStyle(u8);
 impl CharStyle {
-    const fn new(foreground: Color, background: Color) -> CharStyle {
+    pub const fn new(foreground: Color, background: Color) -> CharStyle {
         CharStyle((background as u8) << 4 | (foreground as u8))
     }
 }
