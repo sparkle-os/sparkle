@@ -40,3 +40,32 @@ impl ActivePageTable {
 pub struct Page {
     index: usize,
 }
+
+impl Page {
+    /// Retrieves the page containing a given virtual address.
+    pub fn containing_address(address: VirtualAddress) -> Page {
+        assert!(address < 0x0000_8000_0000_0000 ||
+            address >= 0xffff_8000_0000_0000,
+            "invalid address: 0x{:x}", address);
+
+        Page { index: address / PAGE_SIZE }
+    }
+
+    /// Returns the start (virtual) address of a page
+    pub fn start_address(&self) -> VirtualAddress {
+        self.index * PAGE_SIZE
+    }
+
+    fn p4_index(&self) -> usize {
+        (self.index >> 27) & 0o777
+    }
+    fn p3_index(&self) -> usize {
+        (self.index >> 18) & 0o777
+    }
+    fn p2_index(&self) -> usize {
+        (self.index >> 9) & 0o777
+    }
+    fn p1_index(&self) -> usize {
+        (self.index >> 0) & 0o777
+    }
+}
