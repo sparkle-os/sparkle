@@ -22,6 +22,9 @@ run: $(iso)
 run-trif: $(iso)
 	qemu-system-x86_64 -cdrom $(iso) -no-reboot -d int -s
 
+debug: $(iso)
+	qemu-system-x86_64 -cdrom $(iso) -s -S
+
 iso: $(iso)
 
 $(iso): $(kernel)
