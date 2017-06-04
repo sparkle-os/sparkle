@@ -35,6 +35,43 @@ impl<L> Table<L> where L: TableLevel {
     }
 }
 
+impl<L> Table<L> where L: HierarchicalLevel {
+    fn next_table_address(&self, index: usize) -> Option<usize> {
+        let entry_flags = self[index].flags();
+        if entry_flags.contains(PRESENT) && !entry_flags.contains(HUGE_PAGE) {
+            let table_address = self as *const _ as usize;
+            Some((table_address << 9) | (index << 12))
+        } else {
+            None
+        }
+    }
+
+    pub fn next_table(&self, index: usize) -> Option<&Table<L::NextLevel>> {
+        self.next_table_address(index)
+            .map(|addr| unsafe {&*(addr as *const _)})
+    }
+
+    pub fn next_table_mut(&self, index: usize) -> Option<&mut Table<L::NextLevel>> {
+        self.next_table_address(index)
+            .map(|addr| unsafe {&mut *(addr as *mut _)})
+    }
+
+    pub fn next_table_create<A>(&mut self, index: usize, allocator: &mut A) -> &mut Table<L::NextLevel>
+            where A: FrameAllocator {
+        if self.next_table(index).is_none() {
+            assert!(!self.entries[index].flags().contains(HUGE_PAGE),
+                "Attempted to create a subtable for a hugepage; we do not currently support hugepages.");
+            let frame = allocator.alloc_frame()
+                .expect("Attempted to allocate a frame for a subtable, but no frames are available!");
+
+            self.entries[index].set(frame, PRESENT | WRITABLE);
+            // Zero the new table
+            self.next_table_mut(index).unwrap().zero();
+        }
+
+        self.next_table_mut(index).unwrap()
+    }
+}
 
 impl<L> Index<usize> for Table<L> where L: TableLevel {
     type Output = Entry;
