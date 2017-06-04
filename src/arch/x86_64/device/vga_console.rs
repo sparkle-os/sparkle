@@ -1,3 +1,5 @@
+//! A basic console driver, using the VGA text-mode buffer.
+
 use core::fmt;
 use core::ptr::Unique;
 use spin::Mutex;

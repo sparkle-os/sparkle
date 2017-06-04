@@ -9,7 +9,7 @@ asm_obj := $(patsubst src/arch/$(arch)/%.asm, build/$(arch)/%.o, $(asm_src))
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
 
-.PHONY: all clean run iso
+.PHONY: all clean run iso doc
 
 all: $(kernel)
 
@@ -41,3 +41,6 @@ $(rs_kernel):
 build/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
 	nasm -felf64 $< -o $@
+
+doc:
+	cargo rustdoc --lib -- --no-defaults --passes collapse-docs --passes unindent-comments --passes strip-priv-imports

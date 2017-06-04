@@ -17,8 +17,8 @@ use arch::x86_64::device::vga_console;
 #[no_mangle]
 pub extern fn kernel_main() {
     //////////// !!! WARNING !!! ////////////
-    // WE HAVE AN EXTREMELY SMALL STACK    //
-    // AND NO GUARD PAGE                   //
+    // THE STACK IS LARGER NOW, BUT        //
+    // WE STILL HAVE NO GUARD PAGE         //
     /////////////////////////////////////////
 
     vga_console::WRITER.lock().clear_screen();

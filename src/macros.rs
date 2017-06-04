@@ -1,3 +1,6 @@
+//! Internal macros used by the kernel
+//! (*e.g.* our implementation of `print!`/`println!`).
+
 use core::fmt;
 
 #[macro_export]
