@@ -33,6 +33,14 @@ impl Frame {
         self.index * PAGE_SIZE
     }
 
+    /// Returns an iterator of all the frames between `start` and `end` (inclusive).
+    fn range_inclusive(start: Frame, end: Frame) -> FrameIter {
+        FrameIter {
+            start: start,
+            end: end,
+        }
+    }
+
     /// Clones the Frame; we implement this instead of deriving Clone since deriving clone
     /// makes `.clone()` public, which would be illogical here (frames should not be cloned by end-users,
     /// as that could be used to cause, *e.g.*, double-free errors with the `FrameAllocator`).
@@ -40,6 +48,26 @@ impl Frame {
         Frame { index: self.index }
     }
 }
+
+struct FrameIter {
+    start: Frame,
+    end: Frame,
+}
+
+impl Iterator for FrameIter {
+    type Item = Frame;
+
+    fn next(&mut self) -> Option<Frame> {
+        if self.start <= self.end {
+            let frame = self.start.clone();
+            self.start.index += 1;
+            Some(frame)
+        } else {
+            None
+        }
+    }
+}
+
 
 /// A trait which can be implemented by any frame allocator, to make the frame allocation system
 /// pluggable.
