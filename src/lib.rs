@@ -21,6 +21,8 @@ mod misc;
 mod logger;
 
 use arch::x86_64::device::vga_console;
+use arch::x86_64::memory;
+use arch::x86_64::memory::FrameAllocator;
 
 #[no_mangle]
 pub extern fn kernel_main(multiboot_info_pointer: usize) {
@@ -57,6 +59,12 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
         .max().unwrap();
     let multiboot_start = multiboot_info_pointer;
     let multiboot_end = multiboot_start + (boot_info.total_size as usize);
+    let mut frame_allocator = memory::AreaFrameAllocator::new(
+        kernel_start as usize, kernel_end as usize, multiboot_start,
+        multiboot_end, memory_map_tag.memory_areas());
+
+    info!("allocated frame @ 0x{:?}", frame_allocator.alloc_frame());
+
 
     loop {}
 }
