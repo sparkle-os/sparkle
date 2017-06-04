@@ -9,6 +9,8 @@ extern crate log;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
+#[macro_use]
+extern crate bitflags;
 extern crate x86;
 extern crate multiboot2;
 
