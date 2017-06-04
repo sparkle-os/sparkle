@@ -9,6 +9,7 @@ extern crate log;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
+extern crate x86;
 
 mod arch;
 #[macro_use]
