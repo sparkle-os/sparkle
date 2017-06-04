@@ -11,6 +11,7 @@ extern crate volatile;
 mod arch;
 #[macro_use]
 mod macros;
+mod misc;
 
 use arch::x86_64::device::vga_console;
 
@@ -22,7 +23,8 @@ pub extern fn kernel_main() {
     /////////////////////////////////////////
 
     vga_console::WRITER.lock().clear_screen();
-    println!("Hello world!");
+    println!("--- Sparkle v{} booting! ---", ::misc::VERSION);
+
 
 
     loop {}
