@@ -101,7 +101,7 @@ setup_ptables:
 
 	; p3[0] -> p2
 	mov eax, p2_table
-	or eax, 0b1 ; present + writable
+	or eax, 0b11 ; present + writable
 	mov [p3_table], eax
 
 	; map each p2 entry to a 2mib hugepage
