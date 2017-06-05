@@ -20,6 +20,7 @@ mod misc;
 mod logger;
 mod arch;
 
+use arch::x86_64;
 use arch::x86_64::device::vga_console;
 use arch::x86_64::memory;
 use arch::x86_64::memory::FrameAllocator;
@@ -65,6 +66,11 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
 
     println!("multiboot start: {:#x}, multiboot end: {:#x}",
         multiboot_start, multiboot_end);
+
+    // Enable required CPU features
+    x86_64::enable_nxe_bit(); // Enable NO_EXECUTE pages
+    x86_64::enable_wrprot_bit(); // Disable writing to non-WRITABLE pages
+
     memory::remap_kernel(&mut frame_allocator, boot_info);
 
     println!("-- remap_kernel finished! --");
