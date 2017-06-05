@@ -188,8 +188,16 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             }
         }
 
+        // -- Identity map the VGA console buffer (it's only one frame long)
         let vga_buffer_frame = Frame::containing_address(0xb8000);
         mapper.identity_map(vga_buffer_frame, WRITABLE, allocator);
+
+        // -- Identity map the multiboot info structure
+        let multiboot_start = Frame::containing_address(boot_info.start_address());
+        let multiboot_end = Frame::containing_address(boot_info.end_address() - 1);
+        for frame in Frame::range_inclusive(multiboot_start, multiboot_end) {
+            mapper.identity_map(frame, PRESENT | WRITABLE, allocator);
+        }
     });
 
     let old_table = active_table.switch(new_table);
