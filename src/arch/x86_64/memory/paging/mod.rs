@@ -168,6 +168,8 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     active_table.with(&mut new_table, &mut scratch_page, |mapper| {
         let elf_sections_tag = boot_info.elf_sections_tag()
             .expect("ELF sections tag required!");
+
+        // -- Identity map the kernel sections
         for section in elf_sections_tag.sections() {
             if !section.is_allocated() {
                 // section is not loaded to memory
@@ -175,10 +177,10 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             }
 
             assert!(section.start_address() % PAGE_SIZE == 0, "ELF sections must be page-aligned!");
-            debug!("Mapping section at addr: {:#x}, size: {:#x}",
+            info!("Mapping section at addr: {:#x}, size: {:#x}",
                 section.addr, section.size);
 
-            let flags = WRITABLE;
+            let flags = EntryFlags::from_elf_section_flags(section);
             let start_frame = Frame::containing_address(section.start_address());
             let end_frame = Frame::containing_address(section.end_address() - 1);
             for frame in Frame::range_inclusive(start_frame, end_frame) {
