@@ -63,9 +63,13 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
         kernel_start as usize, kernel_end as usize, multiboot_start,
         multiboot_end, memory_map_tag.memory_areas());
 
+    println!("multiboot start: {:#x}, multiboot end: {:#x}",
+        multiboot_start, multiboot_end);
     memory::remap_kernel(&mut frame_allocator, boot_info);
 
     println!("-- remap_kernel finished! --");
+
+    info!("{:?}", frame_allocator.alloc_frame());
 
     loop {}
 }
