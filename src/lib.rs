@@ -27,11 +27,6 @@ use arch::x86_64::memory::FrameAllocator;
 
 #[no_mangle]
 pub extern fn kernel_main(multiboot_info_pointer: usize) {
-    //////////// !!! WARNING !!! ////////////
-    // THE STACK IS LARGER NOW, BUT        //
-    // WE STILL HAVE NO GUARD PAGE         //
-    /////////////////////////////////////////
-
     vga_console::WRITER.lock().clear_screen();
     println!("--- Sparkle v{} booting! ---", ::misc::VERSION);
 
