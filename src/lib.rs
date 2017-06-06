@@ -33,44 +33,8 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
     logger::init().expect("Logger failed to launch!");
 
     let boot_info = unsafe {multiboot2::load(multiboot_info_pointer)};
-    let memory_map_tag = boot_info.memory_map_tag()
-        .expect("multiboot: Memory map tag required");
-    let elf_sections_tag = boot_info.elf_sections_tag()
-        .expect("multiboot: ELF sections tag required");
 
-    println!("memory areas:");
-    for area in memory_map_tag.memory_areas() {
-        println!("  start: 0x{:x}, length: 0x{:x}",
-            area.base_addr, area.length);
-    }
-    /*debug!("kernel sections:");
-    for section in elf_sections_tag.sections() {
-        debug!("  start: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
-            section.addr, section.size, section.flags);
-    }*/
-
-    let kernel_start = elf_sections_tag.sections().map(|s| s.addr)
-        .min().unwrap();
-    let kernel_end = elf_sections_tag.sections().map(|s| s.addr + s.size)
-        .max().unwrap();
-    let multiboot_start = multiboot_info_pointer;
-    let multiboot_end = multiboot_start + (boot_info.total_size as usize);
-    let mut frame_allocator = memory::AreaFrameAllocator::new(
-        kernel_start as usize, kernel_end as usize, multiboot_start,
-        multiboot_end, memory_map_tag.memory_areas());
-
-    println!("multiboot start: {:#x}, multiboot end: {:#x}",
-        multiboot_start, multiboot_end);
-
-    // Enable required CPU features
-    x86_64::enable_nxe_bit(); // Enable NO_EXECUTE pages
-    x86_64::enable_wrprot_bit(); // Disable writing to non-WRITABLE pages
-
-    memory::remap_kernel(&mut frame_allocator, boot_info);
-
-    println!("-- remap_kernel finished! --");
-
-    info!("{:?}", frame_allocator.alloc_frame());
+    memory::init(boot_info);
 
     loop {}
 }

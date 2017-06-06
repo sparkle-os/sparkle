@@ -5,9 +5,10 @@
 mod area_frame_allocator;
 mod paging;
 
-pub use self::area_frame_allocator::AreaFrameAllocator;
+use multiboot2::BootInformation;
+use arch::x86_64;
 
-pub use self::paging::remap_kernel;
+pub use self::area_frame_allocator::AreaFrameAllocator;
 
 /// The physical size of each frame.
 pub const PAGE_SIZE: usize = 4096;
@@ -74,4 +75,39 @@ impl Iterator for FrameIter {
 pub trait FrameAllocator {
     fn alloc_frame(&mut self) -> Option<Frame>;
     fn dealloc_frame(&mut self, frame: Frame);
+}
+
+
+pub fn init(boot_info: &BootInformation) {
+    let memory_map_tag = boot_info.memory_map_tag()
+        .expect("multiboot: Memory map tag required");
+    let elf_sections_tag = boot_info.elf_sections_tag()
+        .expect("multiboot: ELF sections tag required");
+
+    info!("memory areas:");
+    for area in memory_map_tag.memory_areas() {
+        info!("  start: 0x{:x}, length: 0x{:x}",
+            area.base_addr, area.length);
+    }
+
+    let kernel_start = elf_sections_tag.sections()
+        .filter(|s| s.is_allocated()).map(|s| s.addr).min().unwrap();
+    let kernel_end = elf_sections_tag.sections()
+        .filter(|s| s.is_allocated()).map(|s| s.addr + s.size).max().unwrap();
+
+    info!("kernel start: {:#x}, kernel end: {:#x}",
+        kernel_start, kernel_end);
+    info!("multiboot start: {:#x}, multiboot end: {:#x}",
+        boot_info.start_address(), boot_info.end_address());
+
+    let mut frame_allocator = AreaFrameAllocator::new(
+        kernel_start as usize, kernel_end as usize, boot_info.start_address(),
+        boot_info.end_address(), memory_map_tag.memory_areas());
+
+    // Enable required CPU features
+    x86_64::enable_nxe_bit(); // Enable NO_EXECUTE pages
+    x86_64::enable_wrprot_bit(); // Disable writing to non-WRITABLE pages
+
+    paging::remap_kernel(&mut frame_allocator, boot_info);
+    info!("-- kernel remapped --");
 }

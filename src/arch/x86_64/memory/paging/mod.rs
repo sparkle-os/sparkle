@@ -177,7 +177,7 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             }
 
             assert!(section.start_address() % PAGE_SIZE == 0, "ELF sections must be page-aligned!");
-            info!("Mapping section at addr: {:#x}, size: {:#x}",
+            debug!("Mapping section at addr: {:#x}, size: {:#x}",
                 section.addr, section.size);
 
             let flags = EntryFlags::from_elf_section_flags(section);
@@ -202,30 +202,5 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
 
     let old_table = active_table.switch(new_table);
     info!("Successfully switched to new page table.");
-}
 
-/// Temporary function to test paging
-pub fn test_paging<A>(allocator: &mut A) where A: FrameAllocator {
-    let mut page_table = unsafe {ActivePageTable::new()};
-
-    // test stuff
-
-    let addr = 42 * 515 * 515 * 4096;
-    let page = Page::containing_address(addr);
-    let frame = allocator.alloc_frame().expect("no more frames");
-    println!("vaddr->phys = {:?}, map to {:?}", page_table.translate(addr), frame);
-    page_table.map_to(page, frame, EntryFlags::empty(), allocator);
-    println!("vaddr->phys = {:?} (after mapping)", page_table.translate(addr));
-    println!("next frame: {:?}", allocator.alloc_frame());
-
-    println!("{:#x}", unsafe {
-        *(Page::containing_address(addr).start_address() as *const u64)
-    });
-
-    page_table.unmap(Page::containing_address(addr), allocator);
-    println!("vaddr->phys = {:?} (should be None)", page_table.translate(addr));
-
-    // println!("{:#x}", unsafe {
-    //     *(Page::containing_address(addr).start_address() as *const u64)
-    // });
 }
