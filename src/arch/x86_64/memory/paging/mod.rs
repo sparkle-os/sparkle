@@ -203,4 +203,8 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     let old_table = active_table.switch(new_table);
     info!("Successfully switched to new page table.");
 
+    // Create a guard page in place of the old P4 table's page
+    let old_p4_page = Page::containing_address(old_table.p4_frame.start_address());
+    active_table.unmap(old_p4_page, allocator);
+    info!("guard page established at {:#x}", old_p4_page.start_address());
 }
