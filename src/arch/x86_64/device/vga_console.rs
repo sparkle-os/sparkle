@@ -9,7 +9,7 @@ use x86::shared::io;
 pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
     column_pos: 0, row_pos: 0,
     style: CharStyle::new(Color::Cyan, Color::DarkGray),
-    buffer: unsafe {Unique::new(0xb8000 as *mut _)},
+    buffer: unsafe {Unique::new_unchecked(0xb8000 as *mut _)},
 });
 
 #[allow(dead_code)]

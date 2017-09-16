@@ -14,7 +14,7 @@ impl Mapper {
     /// Since we cannot guarantee this trivially, the constructor is unsafe.
     pub unsafe fn new() -> Mapper {
         Mapper {
-            p4: Unique::new(table::P4),
+            p4: Unique::new_unchecked(table::P4),
         }
     }
 
