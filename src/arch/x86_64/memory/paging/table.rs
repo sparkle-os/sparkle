@@ -15,7 +15,7 @@ impl TableLevel for Level4 {}
 impl TableLevel for Level3 {}
 impl TableLevel for Level2 {}
 impl TableLevel for Level1 {}
-trait HierarchicalLevel: TableLevel {type NextLevel: TableLevel;}
+pub trait HierarchicalLevel: TableLevel {type NextLevel: TableLevel;}
 impl HierarchicalLevel for Level4 {type NextLevel = Level3;}
 impl HierarchicalLevel for Level3 {type NextLevel = Level2;}
 impl HierarchicalLevel for Level2 {type NextLevel = Level1;}
