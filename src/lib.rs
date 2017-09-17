@@ -2,6 +2,7 @@
 #![feature(unique)]
 #![feature(const_fn)]
 #![feature(lang_items)]
+#![feature(const_unique_new)]
 #![no_std]
 
 #[macro_use]
