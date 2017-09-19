@@ -78,8 +78,6 @@ impl Writer {
         match byte {
             b'\n' => self.new_line(),
             byte => {
-                if self.column_pos >= BUFFER_WIDTH {self.new_line();}
-
                 let row = self.row_pos;
                 let col = self.column_pos;
                 let style = self.style;
@@ -90,6 +88,7 @@ impl Writer {
                 });
 
                 self.column_pos += 1;
+                if self.column_pos >= BUFFER_WIDTH { self.new_line();}
             }
         }
     }
