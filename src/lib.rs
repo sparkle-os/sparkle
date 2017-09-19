@@ -3,6 +3,9 @@
 #![feature(const_fn)]
 #![feature(lang_items)]
 #![feature(const_unique_new)]
+#![feature(alloc)]
+#![feature(allocator_api)]
+#![feature(global_allocator)]
 #![no_std]
 
 #[macro_use]
@@ -16,6 +19,10 @@ extern crate volatile;
 extern crate bitflags;
 extern crate x86;
 extern crate multiboot2;
+
+
+// sparkle-* libs
+extern crate sparkle_bump_alloc;
 
 #[macro_use]
 pub mod macros;

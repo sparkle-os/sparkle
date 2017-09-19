@@ -20,3 +20,9 @@ rev = "020f1b3"
 [dependencies.log]
 version = "0.3"
 default-features = false
+
+[dependencies.once]
+path = "lib/once"
+
+[dependencies.sparkle_bump_alloc]
+path = "lib/alloc/bump"
