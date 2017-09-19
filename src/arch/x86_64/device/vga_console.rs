@@ -121,6 +121,9 @@ impl Writer {
 
     /// Move the _console cursor_ (blinky bar) to (row, col).
     fn move_cursor(&mut self, row: usize, col: usize) {
+        assert!(row < BUFFER_HEIGHT, "attempted out-of-bounds (row) cursor move");
+        assert!(col < BUFFER_WIDTH, "attempted out-of-bounds (col) cursor move");
+
         let pos: u16 = ((row * 80) + col) as u16;
         // Lovingly ripped off from wiki.osdev.org/Text_Mode_Cursor
         unsafe {
