@@ -37,6 +37,10 @@ use arch::x86_64;
 use arch::x86_64::device::vga_console;
 use arch::x86_64::memory;
 use arch::x86_64::memory::FrameAllocator;
+use alloca::Allocator;
+
+#[global_allocator]
+static GLOBAL_ALLOC: Allocator = Allocator;
 
 #[no_mangle]
 pub extern fn kernel_main(multiboot_info_pointer: usize) {
