@@ -48,6 +48,7 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
     let boot_info = unsafe {multiboot2::load(multiboot_info_pointer)};
 
     memory::init(boot_info);
+    info!("* memory::init(): success! *");
 
     loop {}
 }

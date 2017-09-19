@@ -7,8 +7,10 @@ mod paging;
 
 use multiboot2::BootInformation;
 use arch::x86_64;
+use ::alloca;
 
 pub use self::area_frame_allocator::AreaFrameAllocator;
+use self::paging::Page;
 
 /// The physical size of each frame.
 pub const PAGE_SIZE: usize = 4096;
@@ -88,7 +90,7 @@ pub fn init(boot_info: &BootInformation) {
 
     info!("memory areas:");
     for area in memory_map_tag.memory_areas() {
-        info!("  start: 0x{:x}, length: 0x{:x}",
+        info!("  start: {:#x}, length: {:#x}",
             area.base_addr, area.length);
     }
 
@@ -110,6 +112,18 @@ pub fn init(boot_info: &BootInformation) {
     x86_64::enable_nxe_bit(); // Enable NO_EXECUTE pages
     x86_64::enable_wrprot_bit(); // Disable writing to non-WRITABLE pages
 
-    paging::remap_kernel(&mut frame_allocator, boot_info);
-    info!("-- kernel remapped --");
+    let mut active_table = paging::remap_kernel(&mut frame_allocator, boot_info);
+    info!("kernel remapped");
+
+    use ::alloca::{HEAP_START, HEAP_SIZE};
+    let heap_start_page = Page::containing_address(HEAP_START);
+    let heap_end_page = Page::containing_address(HEAP_START + HEAP_SIZE - 1);
+
+    // TODO: map these pages lazily
+    for page in Page::range_inclusive(heap_start_page, heap_end_page) {
+        active_table.map(page, paging::WRITABLE, &mut frame_allocator);
+    }
+
+    alloca::heap_init(HEAP_START, HEAP_SIZE);
+    info!("kheap: initialized");
 }
