@@ -117,7 +117,8 @@ impl InactivePageTable {
 }
 
 /// A representation of a virtual page.
-#[derive(Clone, Copy, Debug)]
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Page {
     index: usize,
 }
@@ -127,7 +128,7 @@ impl Page {
     pub fn containing_address(address: VirtualAddress) -> Page {
         assert!(address < 0x0000_8000_0000_0000 ||
             address >= 0xffff_8000_0000_0000,
-            "invalid address: 0x{:x}", address);
+            "invalid address: {:#x}", address);
 
         Page { index: address / PAGE_SIZE }
     }
@@ -135,6 +136,13 @@ impl Page {
     /// Returns the start (virtual) address of a page
     pub fn start_address(&self) -> VirtualAddress {
         self.index * PAGE_SIZE
+    }
+
+    pub fn range_inclusive(start: Page, end: Page) -> PageIter {
+        PageIter {
+            start: start,
+            end: end,
+        }
     }
 
     fn p4_index(&self) -> usize {
@@ -148,6 +156,25 @@ impl Page {
     }
     fn p1_index(&self) -> usize {
         (self.index >> 0) & 0o777
+    }
+}
+
+pub struct PageIter {
+    start: Page,
+    end: Page,
+}
+
+impl Iterator for PageIter {
+    type Item = Page;
+
+    fn next(&mut self) -> Option<Page> {
+        if self.start <= self.end {
+            let frame = self.start.clone();
+            self.start.index += 1;
+            Some(frame)
+        } else {
+            None
+        }
     }
 }
 
