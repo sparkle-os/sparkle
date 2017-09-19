@@ -13,7 +13,7 @@ mod table;
 mod mapper;
 mod temporary_page;
 
-use self::entry::*;
+pub use self::entry::*;
 use self::table::{Table, Level4};
 use self::temporary_page::TemporaryPage;
 use self::mapper::Mapper;
@@ -180,7 +180,9 @@ impl Iterator for PageIter {
 
 /// Remap the kernel
 pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
-        where A: FrameAllocator {
+    -> ActivePageTable
+        where A: FrameAllocator
+{
 
     let mut scratch_page = TemporaryPage::new(Page { index: 0xabadcafe },
         allocator);
@@ -228,10 +230,12 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     });
 
     let old_table = active_table.switch(new_table);
-    info!("Successfully switched to new page table.");
+    info!("successfully switched to new page table.");
 
     // Create a guard page in place of the old P4 table's page
     let old_p4_page = Page::containing_address(old_table.p4_frame.start_address());
     active_table.unmap(old_p4_page, allocator);
     info!("guard page established at {:#x}", old_p4_page.start_address());
+
+    active_table
 }
