@@ -79,6 +79,8 @@ pub trait FrameAllocator {
 
 
 pub fn init(boot_info: &BootInformation) {
+    assert_first_call!("memory::init() can only be called once!");
+
     let memory_map_tag = boot_info.memory_map_tag()
         .expect("multiboot: Memory map tag required");
     let elf_sections_tag = boot_info.elf_sections_tag()

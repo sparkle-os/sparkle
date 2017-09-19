@@ -7,6 +7,8 @@
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate once;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
