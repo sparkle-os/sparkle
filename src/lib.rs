@@ -12,6 +12,8 @@
 extern crate log;
 #[macro_use]
 extern crate once;
+#[macro_use]
+extern crate alloc;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
@@ -26,6 +28,7 @@ extern crate sparkle_bump_alloc;
 
 #[macro_use]
 pub mod macros;
+mod alloca;
 mod misc;
 mod logger;
 mod arch;
