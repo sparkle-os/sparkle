@@ -4,6 +4,7 @@ use log;
 use log::{Log, LogRecord, LogLevel, LogLevelFilter, LogMetadata};
 use log::{SetLoggerError};
 
+/// Initializes the VGA console logger at kernel boot.
 pub fn init() -> Result<(), SetLoggerError> {
     unsafe {
         log::set_logger_raw(|max_log_level| {
@@ -14,6 +15,7 @@ pub fn init() -> Result<(), SetLoggerError> {
     }
 }
 
+/// A `log` logger, which dumps to the VGA console.
 struct ConsoleLogger;
 impl ConsoleLogger {
     fn filter(&self) -> LogLevelFilter {

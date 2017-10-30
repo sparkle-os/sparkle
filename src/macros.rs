@@ -10,6 +10,10 @@ macro_rules! print {
     });
 }
 
+/// Helper function to print to the console.
+///
+/// # TODO
+/// abstract this.
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
     let _ = ::arch::x86_64::device::vga_console::WRITER.lock().write_fmt(args);

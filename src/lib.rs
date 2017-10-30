@@ -39,9 +39,13 @@ use arch::x86_64::memory::FrameAllocator;
 use alloca::Allocator;
 use alloc::boxed::Box;
 
+/// Our globally-visible allocator. Plugs into whatever allocator we set up in [`alloca`].
+//
+/// [`alloca`]: alloca/index.html
 #[global_allocator]
 static GLOBAL_ALLOC: Allocator = Allocator;
 
+/// Kernel main function. Called by the bootstrapping assembly stub.
 #[no_mangle]
 pub extern fn kernel_main(multiboot_info_pointer: usize) {
     vga_console::WRITER.lock().clear_screen();
@@ -53,15 +57,17 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
 
     memory::init(boot_info);
     info!("* memory::init(): success! *");
-
     info!("kheap: smoke test (boxing): {:?}", Box::new("hello world"));
 
     loop {}
 }
 
+/// Related to stack landing pads. Don't care, do nothing.
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern fn eh_personality() {}
+
+/// Dumps panics to the console.
 #[lang = "panic_fmt"]
 #[no_mangle]
 pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
@@ -73,6 +79,7 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     unsafe{loop{x86::shared::halt();}};
 }
 
+/// Stack unwinding. Don't care, just halt.
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {

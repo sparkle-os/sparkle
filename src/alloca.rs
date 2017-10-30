@@ -1,16 +1,23 @@
+//! Wires rust up to the kheap, so that `alloc::` works.
+
 use spin::Mutex;
 use linked_list_allocator::Heap;
 use alloc::allocator::{Alloc, Layout, AllocErr};
 
+/// Base location of the kheap.
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
+/// Size of the kheap.
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
+/// Locked ownership of an optional kheap. Initialized on boot; is `None` before then.
 static HEAP: Mutex<Option<Heap>> = Mutex::new(None);
 
+/// Initialize the kheap. Called at boot.
 pub unsafe fn heap_init(start: usize, size: usize) {
     *HEAP.lock() = Some(Heap::new(start, size));
 }
 
+/// Wraps whatever allocator backend we're using, and implements `alloc::allocator::Alloc`.
 pub struct Allocator;
 
 unsafe impl<'a> Alloc for &'a Allocator {
