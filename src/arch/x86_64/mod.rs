@@ -2,6 +2,7 @@
 
 pub mod device;
 pub mod memory;
+pub mod interrupts;
 
 /// Turn on no-execute page protection.
 pub fn enable_nxe_bit() {
