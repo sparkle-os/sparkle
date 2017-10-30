@@ -12,6 +12,7 @@ volatile = "0.2"
 x86 = "0.8"
 multiboot2 = "0.3.2"
 bitflags = "0.9"
+linked_list_allocator = "0.4.2"
 
 [dependencies.spin]
 git = "https://github.com/messense/spin-rs"
@@ -23,6 +24,3 @@ default-features = false
 
 [dependencies.once]
 path = "lib/once"
-
-[dependencies.sparkle_bump_alloc]
-path = "lib/alloc/bump"

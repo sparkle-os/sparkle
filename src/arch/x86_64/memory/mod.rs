@@ -124,6 +124,8 @@ pub fn init(boot_info: &BootInformation) {
         active_table.map(page, paging::WRITABLE, &mut frame_allocator);
     }
 
-    alloca::heap_init(HEAP_START, HEAP_SIZE);
+    unsafe {
+        alloca::heap_init(HEAP_START, HEAP_SIZE);
+    }
     info!("kheap: initialized");
 }

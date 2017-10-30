@@ -21,10 +21,9 @@ extern crate volatile;
 extern crate bitflags;
 extern crate x86;
 extern crate multiboot2;
-
+extern crate linked_list_allocator;
 
 // sparkle-* libs
-extern crate sparkle_bump_alloc;
 
 #[macro_use]
 pub mod macros;
@@ -38,6 +37,7 @@ use arch::x86_64::device::vga_console;
 use arch::x86_64::memory;
 use arch::x86_64::memory::FrameAllocator;
 use alloca::Allocator;
+use alloc::boxed::Box;
 
 #[global_allocator]
 static GLOBAL_ALLOC: Allocator = Allocator;
@@ -53,6 +53,8 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
 
     memory::init(boot_info);
     info!("* memory::init(): success! *");
+
+    info!("kheap: smoke test (boxing): {:?}", Box::new("hello world"));
 
     loop {}
 }
