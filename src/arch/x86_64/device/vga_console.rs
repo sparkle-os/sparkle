@@ -4,7 +4,7 @@ use core::fmt;
 use core::ptr::Unique;
 use spin::Mutex;
 use volatile::Volatile;
-use x86::shared::io;
+use x86::instructions::port as io;
 
 pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
     column_pos: 0, row_pos: 0,

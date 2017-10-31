@@ -130,9 +130,9 @@ impl Mapper {
         let frame = p1[page.p1_index()].pointed_frame().unwrap();
         p1[page.p1_index()].set_unused();
 
-        use x86::shared::tlb;
+        use ::x86::instructions::tlb;
         unsafe {
-            tlb::flush(page.start_address());
+            tlb::flush(::x86::VirtualAddress(page.start_address()));
         }
 
         // TODO free p(1,2,3) table if empty

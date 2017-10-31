@@ -47,13 +47,14 @@ impl ActivePageTable {
 
     /// Executes a closure, with a different page table recursively mapped
     pub fn with<F>(&mut self, table: &mut InactivePageTable, scratch_page: &mut TemporaryPage, f: F)
-            where F: FnOnce(&mut Mapper) {
-        use x86::shared::{tlb, control_regs};
+    where F: FnOnce(&mut Mapper) {
+        use x86::instructions::tlb;
+        use x86::registers::control_regs;
 
         {
             // Backup the original P4 pointer
             let backup = Frame::containing_address(
-                unsafe {control_regs::cr3()}
+                unsafe {control_regs::cr3().0 as usize}
             );
 
             // Map a scratch page to the current p4 table
@@ -79,14 +80,14 @@ impl ActivePageTable {
     /// Note: We don't need to flush the TLB here, as the CPU automatically flushes
     /// the TLB when the P4 table is switched.
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
-        use x86::shared::{control_regs};
+        use x86::registers::control_regs;
 
         let old_table = InactivePageTable {
-            p4_frame: Frame::containing_address(unsafe {control_regs::cr3()}),
+            p4_frame: Frame::containing_address(unsafe {control_regs::cr3().0 as usize}),
         };
 
         unsafe {
-            control_regs::cr3_write(new_table.p4_frame.start_address());
+            control_regs::cr3_write(::x86::PhysicalAddress(new_table.p4_frame.start_address() as u64));
         }
 
         old_table

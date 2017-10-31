@@ -9,7 +9,7 @@ crate-type = ["staticlib"]
 [dependencies]
 rlibc = "1.0"
 volatile = "0.2"
-x86 = "0.8"
+x86_64 = "0.1.2"
 multiboot2 = "0.3.2"
 bitflags = "0.9"
 linked_list_allocator = "0.4.2"

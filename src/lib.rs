@@ -19,9 +19,9 @@ extern crate spin;
 extern crate volatile;
 #[macro_use]
 extern crate bitflags;
-extern crate x86;
 extern crate multiboot2;
 extern crate linked_list_allocator;
+extern crate x86_64 as x86;
 
 // sparkle-* libs
 
@@ -77,12 +77,12 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     println!("!!! PANIC in {} on line {} !!!", file, line);
     println!("  {}", fmt);
 
-    unsafe{loop{x86::shared::halt();}};
+    unsafe{loop{x86::instructions::halt();}};
 }
 
 /// Stack unwinding. Don't care, just halt.
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {
-    unsafe{loop{x86::shared::halt();}};
+    unsafe{loop{x86::instructions::halt();}};
 }

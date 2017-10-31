@@ -6,7 +6,7 @@ pub mod interrupts;
 
 /// Turn on no-execute page protection.
 pub fn enable_nxe_bit() {
-    use x86::shared::msr;
+    use x86::registers::msr;
 
     const NXE_BIT: u64 = 1<<11;
     unsafe {
@@ -17,8 +17,8 @@ pub fn enable_nxe_bit() {
 
 /// Turn on page write-protect enforcement.
 pub fn enable_wrprot_bit() {
-    use x86::shared::control_regs::{cr0, cr0_write, CR0_WRITE_PROTECT};
+    use x86::registers::control_regs::{cr0, cr0_write, Cr0};
     unsafe {
-        cr0_write(cr0() | CR0_WRITE_PROTECT);
+        cr0_write(cr0() | Cr0::WRITE_PROTECT);
     }
 }
