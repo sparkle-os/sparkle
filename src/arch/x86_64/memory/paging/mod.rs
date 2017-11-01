@@ -3,7 +3,7 @@
 //! Extremely ripped off from Phil Oppermann's tutorials, because I don't feel like writing
 //! a paging system off the top of my head today.
 
-use core::ops::{Deref, DerefMut};
+use core::ops::{Add, Deref, DerefMut};
 use multiboot2::BootInformation;
 use super::PAGE_SIZE;
 use super::{Frame, FrameAllocator};
@@ -155,6 +155,14 @@ impl Page {
     }
     fn p1_index(&self) -> usize {
         (self.index >> 0) & 0o777
+    }
+}
+
+impl Add<usize> for Page {
+    type Output = Page;
+
+    fn add(self, rhs: usize) -> Page {
+        Page { index: self.index + rhs }
     }
 }
 
