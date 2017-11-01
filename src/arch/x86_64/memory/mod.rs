@@ -11,7 +11,8 @@ use arch::x86_64;
 use ::alloca;
 
 pub use self::area_frame_allocator::AreaFrameAllocator;
-use self::paging::Page;
+use self::paging::{Page, ActivePageTable};
+
 pub use self::stack_allocator::{Stack, StackAllocator};
 
 /// The physical size of each frame.
@@ -82,7 +83,23 @@ pub trait FrameAllocator {
 }
 
 
-pub fn init(boot_info: &BootInformation) {
+pub struct MemoryController {
+    active_table: ActivePageTable,
+    frame_allocator: AreaFrameAllocator,
+    stack_allocator: StackAllocator,
+}
+
+impl MemoryController {
+    /// Allocates and returns a stack.
+    ///
+    /// Note: `size` is given in pages.
+    pub fn alloc_stack(&mut self, size: usize) -> Option<Stack> {
+        self.stack_allocator.alloc_stack(&mut self.active_table, &mut self.frame_allocator, size)
+    }
+}
+
+
+pub fn init(boot_info: &BootInformation) -> MemoryController {
     assert_first_call!("memory::init() can only be called once!");
 
     let memory_map_tag = boot_info.memory_map_tag()
@@ -130,4 +147,18 @@ pub fn init(boot_info: &BootInformation) {
         alloca::heap_init(HEAP_START, HEAP_SIZE);
     }
     info!("kheap: initialized");
+
+    let stack_allocator = {
+        let alloc_start = heap_end_page + 1;
+        let alloc_end = alloc_start + 100;
+        let alloc_range = Page::range_inclusive(alloc_start, alloc_end);
+
+        StackAllocator::new(alloc_range)
+    };
+
+    MemoryController {
+        active_table: active_table,
+        frame_allocator: frame_allocator,
+        stack_allocator: stack_allocator,
+    }
 }
