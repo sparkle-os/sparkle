@@ -51,6 +51,8 @@ impl FrameAllocator for AreaFrameAllocator {
         }
     }
 
+    /// EXTREME BADNESS
+    /// TODO: fix this
     fn dealloc_frame(&mut self, frame: Frame) {
         unimplemented!();
     }
