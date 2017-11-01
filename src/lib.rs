@@ -62,6 +62,12 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
     info!("* memory::init(): success! *");
     info!("kheap: smoke test (boxing): {:?}", Box::new("hello world"));
 
+    interrupts::init(&mut mem_ctrl);
+    info!("int: initialized idt");
+
+    x86::instructions::interrupts::int3();
+    info!("int: int[3] smoketest didn't fault!");
+
     loop {}
 }
 
