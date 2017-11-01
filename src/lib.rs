@@ -14,11 +14,15 @@ extern crate log;
 extern crate once;
 #[macro_use]
 extern crate alloc;
+#[allow(unused_extern_crates)]
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
 #[macro_use]
 extern crate bitflags;
+#[macro_use]
+extern crate lazy_static;
+extern crate bit_field;
 extern crate multiboot2;
 extern crate linked_list_allocator;
 extern crate x86_64 as x86;
