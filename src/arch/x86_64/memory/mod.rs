@@ -3,6 +3,7 @@
 //! Heavly inspired/lovingly ripped off from Phil Oppermann's [os.phil-opp.com](http://os.phil-opp.com/).
 
 mod area_frame_allocator;
+mod stack_allocator;
 mod paging;
 
 use multiboot2::BootInformation;
@@ -11,6 +12,7 @@ use ::alloca;
 
 pub use self::area_frame_allocator::AreaFrameAllocator;
 use self::paging::Page;
+pub use self::stack_allocator::{Stack, StackAllocator};
 
 /// The physical size of each frame.
 pub const PAGE_SIZE: usize = 4096;
