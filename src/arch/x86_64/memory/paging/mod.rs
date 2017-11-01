@@ -14,7 +14,7 @@ mod mapper;
 mod temporary_page;
 
 pub use self::entry::*;
-use self::table::{Table, Level4};
+use self::table::Table;
 use self::temporary_page::TemporaryPage;
 use self::mapper::Mapper;
 
@@ -53,23 +53,21 @@ impl ActivePageTable {
 
         {
             // Backup the original P4 pointer
-            let backup = Frame::containing_address(
-                unsafe {control_regs::cr3().0 as usize}
-            );
+            let backup = Frame::containing_address(control_regs::cr3().0 as usize);
 
             // Map a scratch page to the current p4 table
             let p4_table = scratch_page.map_table_frame(backup.clone(), self);
 
             // Overwrite main P4 recursive mapping
             self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE);
-            unsafe {tlb::flush_all();} // flush *all* TLBs to prevent fuckiness
+            tlb::flush_all(); // flush *all* TLBs to prevent fuckiness
 
             // Execute f in context of the new page table
             f(self);
 
             // Restore the original pointer to P4
             p4_table[511].set(backup, PRESENT | WRITABLE);
-            unsafe {tlb::flush_all();} // prevent fuckiness
+            tlb::flush_all(); // prevent fuckiness
         }
 
         scratch_page.unmap(self);
@@ -83,7 +81,7 @@ impl ActivePageTable {
         use x86::registers::control_regs;
 
         let old_table = InactivePageTable {
-            p4_frame: Frame::containing_address(unsafe {control_regs::cr3().0 as usize}),
+            p4_frame: Frame::containing_address(control_regs::cr3().0 as usize),
         };
 
         unsafe {

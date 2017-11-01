@@ -2,7 +2,7 @@ use core::ptr::Unique;
 use arch::x86_64::memory::{PAGE_SIZE, Frame, FrameAllocator};
 use super::entry::*;
 use super::{PhysicalAddress, VirtualAddress, Page, ENTRY_COUNT};
-use super::table::{self, Table, Level1, Level4};
+use super::table::{self, Table, Level4};
 
 /// Owns the top-level active page table (P4).
 pub struct Mapper {
@@ -131,9 +131,7 @@ impl Mapper {
         p1[page.p1_index()].set_unused();
 
         use ::x86::instructions::tlb;
-        unsafe {
-            tlb::flush(::x86::VirtualAddress(page.start_address()));
-        }
+        tlb::flush(::x86::VirtualAddress(page.start_address()));
 
         // TODO free p(1,2,3) table if empty
         // allocator.dealloc_frame(frame);

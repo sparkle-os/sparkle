@@ -1,6 +1,6 @@
 use arch::x86_64::memory::{Frame, FrameAllocator};
 use super::{Page, Table, ActivePageTable};
-use super::table::{Level1, Level4};
+use super::table::Level1;
 use super::{VirtualAddress};
 
 pub struct TemporaryPage {
