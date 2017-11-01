@@ -1,1 +1,0 @@
-//! Controls Sparkle's IDT.
