@@ -132,7 +132,7 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
     x86_64::enable_wrprot_bit(); // Disable writing to non-WRITABLE pages
 
     let mut active_table = paging::remap_kernel(&mut frame_allocator, boot_info);
-    info!("kernel remapped");
+    info!("paging: remapped kernel");
 
     use ::alloca::{HEAP_START, HEAP_SIZE};
     let heap_start_page = Page::containing_address(HEAP_START);
