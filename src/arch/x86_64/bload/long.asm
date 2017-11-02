@@ -18,6 +18,6 @@ long_start:
 	mov rax, 0x2f542f492f582f45
 	mov qword [0xb8000], rax
 
-.halted
+.halted:
 	hlt
 	jmp .halted ; in case some interrupt kicks us out of hlt, jump back and hlt again

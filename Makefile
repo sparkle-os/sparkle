@@ -4,8 +4,8 @@ iso := build/$(arch)/os.iso
 rs_target := $(arch)-unknown-none
 rs_kernel := target/$(rs_target)/debug/libsparkle_os.a
 
-asm_src := $(wildcard src/arch/$(arch)/*.asm)
-asm_obj := $(patsubst src/arch/$(arch)/%.asm, build/$(arch)/%.o, $(asm_src))
+asm_src := $(wildcard src/arch/$(arch)/bload/*.asm)
+asm_obj := $(patsubst src/arch/$(arch)/bload/%.asm, build/$(arch)/bload/%.o, $(asm_src))
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
 
