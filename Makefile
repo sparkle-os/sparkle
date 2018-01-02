@@ -39,7 +39,7 @@ $(kernel): $(asm_obj) $(rs_kernel)
 
 .PHONY: $(rs_kernel) # always run xargo
 $(rs_kernel):
-	xargo build --target $(rs_target)
+	RUST_TARGET_PATH=$(shell pwd) xargo build --target $(rs_target)
 
 build/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
