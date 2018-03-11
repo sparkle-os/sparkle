@@ -17,7 +17,9 @@ impl FrameAllocator for AreaFrameAllocator {
     fn alloc_frame(&mut self) -> Option<Frame> {
         if let Some(area) = self.current_area {
             // This is the next frame up for allocation
-            let frame = Frame {index: self.next_free_frame.index};
+            let frame = Frame {
+                index: self.next_free_frame.index,
+            };
 
             // Calculate the current area's last frame
             let current_area_last_frame = {
@@ -60,9 +62,13 @@ impl FrameAllocator for AreaFrameAllocator {
 }
 
 impl AreaFrameAllocator {
-    pub fn new(kernel_start: usize, kernel_end: usize,
-           multiboot_start: usize, multiboot_end: usize,
-           memory_areas: MemoryAreaIter) -> AreaFrameAllocator {
+    pub fn new(
+        kernel_start: usize,
+        kernel_end: usize,
+        multiboot_start: usize,
+        multiboot_end: usize,
+        memory_areas: MemoryAreaIter,
+    ) -> AreaFrameAllocator {
         let mut allocator = AreaFrameAllocator {
             next_free_frame: Frame::containing_address(0x0),
             current_area: None,
@@ -77,10 +83,13 @@ impl AreaFrameAllocator {
     }
 
     fn next_area(&mut self) {
-        self.current_area = self.areas.clone().filter(|area| {
-            let address = area.base_addr + area.length - 1;
-            Frame::containing_address(address as usize) >= self.next_free_frame
-        }).min_by_key(|area| area.base_addr);
+        self.current_area = self.areas
+            .clone()
+            .filter(|area| {
+                let address = area.base_addr + area.length - 1;
+                Frame::containing_address(address as usize) >= self.next_free_frame
+            })
+            .min_by_key(|area| area.base_addr);
 
         if let Some(area) = self.current_area {
             let start_frame = Frame::containing_address(area.base_addr as usize);

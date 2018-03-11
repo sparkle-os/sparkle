@@ -8,10 +8,10 @@ mod paging;
 
 use multiboot2::BootInformation;
 use arch::x86_64;
-use ::alloca;
+use alloca;
 
 pub use self::area_frame_allocator::AreaFrameAllocator;
-use self::paging::{Page, ActivePageTable};
+use self::paging::{ActivePageTable, Page};
 
 pub use self::stack_allocator::{Stack, StackAllocator};
 
@@ -27,12 +27,16 @@ pub struct Frame {
 impl Frame {
     /// Retrieves the frame containing a particular physical address.
     fn containing_address(address: usize) -> Frame {
-        Frame {index: address/PAGE_SIZE}
+        Frame {
+            index: address / PAGE_SIZE,
+        }
     }
 
     /// Returns the frame after this one.
     fn next_frame(&self) -> Frame {
-        Frame {index: self.index + 1}
+        Frame {
+            index: self.index + 1,
+        }
     }
 
     fn start_address(&self) -> usize {
@@ -74,14 +78,12 @@ impl Iterator for FrameIter {
     }
 }
 
-
 /// A trait which can be implemented by any frame allocator, to make the frame allocation system
 /// pluggable.
 pub trait FrameAllocator {
     fn alloc_frame(&mut self) -> Option<Frame>;
     fn dealloc_frame(&mut self, frame: Frame);
 }
-
 
 pub struct MemoryController {
     active_table: ActivePageTable,
@@ -94,38 +96,56 @@ impl MemoryController {
     ///
     /// Note: `size` is given in pages.
     pub fn alloc_stack(&mut self, size: usize) -> Option<Stack> {
-        self.stack_allocator.alloc_stack(&mut self.active_table, &mut self.frame_allocator, size)
+        self.stack_allocator
+            .alloc_stack(&mut self.active_table, &mut self.frame_allocator, size)
     }
 }
-
 
 pub fn init(boot_info: &BootInformation) -> MemoryController {
     assert_first_call!("memory::init() can only be called once!");
 
-    let memory_map_tag = boot_info.memory_map_tag()
+    let memory_map_tag = boot_info
+        .memory_map_tag()
         .expect("multiboot: Memory map tag required");
-    let elf_sections_tag = boot_info.elf_sections_tag()
+    let elf_sections_tag = boot_info
+        .elf_sections_tag()
         .expect("multiboot: ELF sections tag required");
 
     info!("memory areas:");
     for area in memory_map_tag.memory_areas() {
-        info!("  start: {:#x}, length: {:#x}",
-            area.base_addr, area.length);
+        info!("  start: {:#x}, length: {:#x}", area.base_addr, area.length);
     }
 
-    let kernel_start = elf_sections_tag.sections()
-        .filter(|s| s.is_allocated()).map(|s| s.addr).min().unwrap();
-    let kernel_end = elf_sections_tag.sections()
-        .filter(|s| s.is_allocated()).map(|s| s.addr + s.size).max().unwrap();
+    let kernel_start = elf_sections_tag
+        .sections()
+        .filter(|s| s.is_allocated())
+        .map(|s| s.addr)
+        .min()
+        .unwrap();
+    let kernel_end = elf_sections_tag
+        .sections()
+        .filter(|s| s.is_allocated())
+        .map(|s| s.addr + s.size)
+        .max()
+        .unwrap();
 
-    info!("kernel start: {:#x}, kernel end: {:#x}",
-        kernel_start, kernel_end);
-    info!("multiboot start: {:#x}, multiboot end: {:#x}",
-        boot_info.start_address(), boot_info.end_address());
+    info!(
+        "kernel start: {:#x}, kernel end: {:#x}",
+        kernel_start, kernel_end
+    );
+    info!(
+        "multiboot start: {:#x}, multiboot end: {:#x}",
+        boot_info.start_address(),
+        boot_info.end_address()
+    );
 
     let mut frame_allocator = AreaFrameAllocator::new(
-        kernel_start as usize, kernel_end as usize, boot_info.start_address(),
-        boot_info.end_address(), memory_map_tag.memory_areas());
+        kernel_start as usize,
+        kernel_end as usize,
+        boot_info.start_address(),
+        boot_info.end_address(),
+        memory_map_tag.memory_areas(),
+    );
 
     // Enable required CPU features
     x86_64::enable_nxe_bit(); // Enable NO_EXECUTE pages
@@ -134,7 +154,7 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
     let mut active_table = paging::remap_kernel(&mut frame_allocator, boot_info);
     info!("paging: remapped kernel");
 
-    use ::alloca::{HEAP_START, HEAP_SIZE};
+    use alloca::{HEAP_SIZE, HEAP_START};
     let heap_start_page = Page::containing_address(HEAP_START);
     let heap_end_page = Page::containing_address(HEAP_START + HEAP_SIZE - 1);
 

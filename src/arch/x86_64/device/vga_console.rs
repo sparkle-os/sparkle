@@ -17,22 +17,22 @@ lazy_static! {
 #[derive(Clone, Copy, Debug)]
 #[repr(u8)]
 pub enum Color {
-    Black      = 0,
-    Blue       = 1,
-    Green      = 2,
-    Cyan       = 3,
-    Red        = 4,
-    Magenta    = 5,
-    Brown      = 6,
-    LightGray  = 7,
-    DarkGray   = 8,
-    LightBlue  = 9,
+    Black = 0,
+    Blue = 1,
+    Green = 2,
+    Cyan = 3,
+    Red = 4,
+    Magenta = 5,
+    Brown = 6,
+    LightGray = 7,
+    DarkGray = 8,
+    LightBlue = 9,
     LightGreen = 10,
-    LightCyan  = 11,
-    LightRed   = 12,
-    Pink       = 13,
-    Yellow     = 14,
-    White      = 15,
+    LightCyan = 11,
+    LightRed = 12,
+    Pink = 13,
+    Yellow = 14,
+    White = 15,
 }
 
 /// Foreground + background color pair for a VGA console cell.
@@ -64,7 +64,8 @@ struct Buffer {
 /// Maintains a cursor and current style.
 pub struct Writer {
     /// Current position of the 'write cursor'
-    row_pos: usize, column_pos: usize,
+    row_pos: usize,
+    column_pos: usize,
     /// Current style we're writing with
     style: CharStyle,
     /// This is set up on initialization to shadow `0xb8000`, the VGA text-mode buffer.
@@ -89,22 +90,31 @@ impl Writer {
                 });
 
                 self.column_pos += 1;
-                if self.column_pos >= BUFFER_WIDTH { self.new_line();}
+                if self.column_pos >= BUFFER_WIDTH {
+                    self.new_line();
+                }
             }
         }
     }
 
     /// Write a single byte at (row, col).
     pub fn write_byte_at(&mut self, byte: u8, row: usize, col: usize) {
-        self.row_pos = row; self.column_pos = col;
+        self.row_pos = row;
+        self.column_pos = col;
         let style = self.style;
 
-        self.buffer.chars[row][col].write(VgaChar {ascii_char: byte, style: style});
+        self.buffer.chars[row][col].write(VgaChar {
+            ascii_char: byte,
+            style: style,
+        });
     }
 
     /// Clear the VGA buffer.
     pub fn clear_screen(&mut self) {
-        let clear_style = VgaChar {ascii_char:  b' ', style: self.style};
+        let clear_style = VgaChar {
+            ascii_char: b' ',
+            style: self.style,
+        };
         for row in 0..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 self.buffer.chars[row][col].write(clear_style);
@@ -122,8 +132,14 @@ impl Writer {
 
     /// Move the _console cursor_ (blinky bar) to (row, col).
     fn move_cursor(&mut self, row: usize, col: usize) {
-        assert!(row < BUFFER_HEIGHT, "attempted out-of-bounds (row) cursor move");
-        assert!(col < BUFFER_WIDTH, "attempted out-of-bounds (col) cursor move");
+        assert!(
+            row < BUFFER_HEIGHT,
+            "attempted out-of-bounds (row) cursor move"
+        );
+        assert!(
+            col < BUFFER_WIDTH,
+            "attempted out-of-bounds (col) cursor move"
+        );
 
         let pos: u16 = ((row * 80) + col) as u16;
         // Lovingly ripped off from wiki.osdev.org/Text_Mode_Cursor
@@ -132,7 +148,7 @@ impl Writer {
             io::outb(0x3d5, (pos & 0xff) as u8);
 
             io::outb(0x3d4, 0x0e);
-            io::outb(0x3d5, ((pos>>8) & 0xff) as u8);
+            io::outb(0x3d5, ((pos >> 8) & 0xff) as u8);
         }
     }
 
@@ -148,7 +164,10 @@ impl Writer {
 
     /// Clear a `row` of the VGA buffer.
     fn clear_row(&mut self, row: usize) {
-        let clear_style = VgaChar {ascii_char:  b' ', style: self.style};
+        let clear_style = VgaChar {
+            ascii_char: b' ',
+            style: self.style,
+        };
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(clear_style);
         }

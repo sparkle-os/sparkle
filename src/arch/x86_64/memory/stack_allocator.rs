@@ -1,5 +1,5 @@
-use memory::paging::{self, Page, PageIter, ActivePageTable};
-use memory::{PAGE_SIZE, FrameAllocator};
+use memory::paging::{self, ActivePageTable, Page, PageIter};
+use memory::{FrameAllocator, PAGE_SIZE};
 
 #[derive(Debug)]
 pub struct Stack {
@@ -9,8 +9,10 @@ pub struct Stack {
 
 impl Stack {
     fn new(top: usize, bottom: usize) -> Stack {
-        assert!(top > bottom,
-            "Stack top must be higher in memory than the bottom");
+        assert!(
+            top > bottom,
+            "Stack top must be higher in memory than the bottom"
+        );
 
         Stack {
             top: top,
@@ -18,10 +20,13 @@ impl Stack {
         }
     }
 
-    pub fn top(&self) -> usize    { self.top }
-    pub fn bottom(&self) -> usize { self.bottom }
+    pub fn top(&self) -> usize {
+        self.top
+    }
+    pub fn bottom(&self) -> usize {
+        self.bottom
+    }
 }
-
 
 pub struct StackAllocator {
     range: PageIter,
@@ -35,11 +40,14 @@ impl StackAllocator {
     /// Allocate a stack.
     ///
     /// Note: `size` is given in pages.
-    pub fn alloc_stack<A>(&mut self,
-                 active_table: &mut ActivePageTable,
-                 frame_alloc: &mut A,
-                 size: usize) -> Option<Stack>
-        where A: FrameAllocator
+    pub fn alloc_stack<A>(
+        &mut self,
+        active_table: &mut ActivePageTable,
+        frame_alloc: &mut A,
+        size: usize,
+    ) -> Option<Stack>
+    where
+        A: FrameAllocator,
     {
         // zero-size stacks are nonsensical
         if size == 0 {

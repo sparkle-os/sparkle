@@ -1,24 +1,24 @@
-#![feature(asm, ptr_internals, const_fn, lang_items, const_unique_new,
-           alloc, allocator_api, global_allocator, abi_x86_interrupt)]
+#![feature(asm, ptr_internals, const_fn, lang_items, const_unique_new, alloc, allocator_api,
+           global_allocator, abi_x86_interrupt)]
 #![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(large_digit_groups))]
 
 #[macro_use]
-extern crate log;
-#[macro_use]
-extern crate once;
-#[macro_use]
 extern crate alloc;
-extern crate rlibc;
-extern crate spin;
-extern crate volatile;
+extern crate bit_field;
 #[macro_use]
 extern crate bitflags;
 #[macro_use]
 extern crate lazy_static;
-extern crate bit_field;
-extern crate multiboot2;
 extern crate linked_list_allocator;
+#[macro_use]
+extern crate log;
+extern crate multiboot2;
+#[macro_use]
+extern crate once;
+extern crate rlibc;
+extern crate spin;
+extern crate volatile;
 extern crate x86_64 as x86;
 
 // sparkle-* libs
@@ -43,13 +43,13 @@ static GLOBAL_ALLOC: Allocator = Allocator {};
 
 /// Kernel main function. Called by the bootstrapping assembly stub.
 #[no_mangle]
-pub extern fn kernel_main(multiboot_info_pointer: usize) {
+pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     vga_console::WRITER.lock().clear_screen();
     println!("--- Sparkle v{} booting! ---", ::misc::VERSION);
 
     logger::init().expect("Logger failed to launch!");
 
-    let boot_info = unsafe {multiboot2::load(multiboot_info_pointer)};
+    let boot_info = unsafe { multiboot2::load(multiboot_info_pointer) };
 
     let mut mem_ctrl = memory::init(boot_info);
     info!("memory::init() success!");
@@ -64,23 +64,36 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
 /// Related to stack landing pads. Don't care, do nothing.
 #[lang = "eh_personality"]
 #[no_mangle]
-pub extern fn eh_personality() {}
+pub extern "C" fn eh_personality() {}
 
 /// Dumps panics to the console.
 #[lang = "panic_fmt"]
 #[no_mangle]
-pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
-    vga_console::WRITER.lock().set_style(vga_console::CharStyle::new(vga_console::Color::Black, vga_console::Color::Red));
+pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
+    vga_console::WRITER
+        .lock()
+        .set_style(vga_console::CharStyle::new(
+            vga_console::Color::Black,
+            vga_console::Color::Red,
+        ));
     println!();
     println!("!!! PANIC in {} on line {} !!!", file, line);
     println!("  {}", fmt);
 
-    unsafe{loop{x86::instructions::halt();}};
+    unsafe {
+        loop {
+            x86::instructions::halt();
+        }
+    };
 }
 
 /// Stack unwinding. Don't care, just halt.
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {
-    unsafe{loop{x86::instructions::halt();}};
+    unsafe {
+        loop {
+            x86::instructions::halt();
+        }
+    };
 }

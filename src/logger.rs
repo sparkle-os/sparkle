@@ -1,8 +1,8 @@
 //! A basic console logging backend for the `log` crate.
 
 use log;
-use log::{Log, LogRecord, LogLevelFilter, LogMetadata};
-use log::{SetLoggerError};
+use log::{Log, LogLevelFilter, LogMetadata, LogRecord};
+use log::SetLoggerError;
 
 /// Initializes the VGA console logger at kernel boot.
 pub fn init() -> Result<(), SetLoggerError> {

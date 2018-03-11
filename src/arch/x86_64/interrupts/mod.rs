@@ -1,6 +1,6 @@
 //! Controls Sparkle's IDT.
 
-use x86::structures::idt::{Idt, ExceptionStackFrame};
+use x86::structures::idt::{ExceptionStackFrame, Idt};
 use x86::structures::tss::TaskStateSegment;
 use x86::structures::gdt::SegmentSelector;
 use x86::VirtualAddress;
@@ -11,7 +11,6 @@ use arch::x86_64::memory::MemoryController;
 mod gdt;
 
 use self::gdt::Gdt;
-
 
 const IST_DOUBLE_FAULT: usize = 0;
 
@@ -36,13 +35,13 @@ pub fn init(memory_controller: &mut MemoryController) {
     use x86::instructions::segmentation::set_cs;
     use x86::instructions::tables::load_tss;
 
-    let double_fault_stack = memory_controller.alloc_stack(1)
+    let double_fault_stack = memory_controller
+        .alloc_stack(1)
         .expect("could not allocate stack for double faulting");
 
     let tss = TSS.call_once(|| {
         let mut tss = TaskStateSegment::new();
-        tss.interrupt_stack_table[IST_DOUBLE_FAULT] =
-            VirtualAddress(double_fault_stack.top());
+        tss.interrupt_stack_table[IST_DOUBLE_FAULT] = VirtualAddress(double_fault_stack.top());
 
         tss
     });
@@ -72,8 +71,9 @@ extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFra
 }
 
 extern "x86-interrupt" fn double_fault_handler(
-    stack_frame: &mut ExceptionStackFrame, _error_code: u64)
-{
+    stack_frame: &mut ExceptionStackFrame,
+    _error_code: u64,
+) {
     println!("int[8]: fault: double:\n{:#?}", stack_frame);
 
     #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]

@@ -28,16 +28,20 @@ pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
 pub struct ActivePageTable {
-    mapper: Mapper
+    mapper: Mapper,
 }
 
 impl Deref for ActivePageTable {
     type Target = Mapper;
-    fn deref(&self) -> &Mapper {&self.mapper}
+    fn deref(&self) -> &Mapper {
+        &self.mapper
+    }
 }
 
 impl DerefMut for ActivePageTable {
-    fn deref_mut(&mut self) -> &mut Mapper {&mut self.mapper}
+    fn deref_mut(&mut self) -> &mut Mapper {
+        &mut self.mapper
+    }
 }
 
 impl ActivePageTable {
@@ -49,7 +53,9 @@ impl ActivePageTable {
 
     /// Executes a closure, with a different page table recursively mapped
     pub fn with<F>(&mut self, table: &mut InactivePageTable, scratch_page: &mut TemporaryPage, f: F)
-    where F: FnOnce(&mut Mapper) {
+    where
+        F: FnOnce(&mut Mapper),
+    {
         use x86::instructions::tlb;
         use x86::registers::control_regs;
 
@@ -87,7 +93,9 @@ impl ActivePageTable {
         };
 
         unsafe {
-            control_regs::cr3_write(::x86::PhysicalAddress(new_table.p4_frame.start_address() as u64));
+            control_regs::cr3_write(
+                ::x86::PhysicalAddress(new_table.p4_frame.start_address() as u64),
+            );
         }
 
         old_table
@@ -100,8 +108,11 @@ pub struct InactivePageTable {
 }
 
 impl InactivePageTable {
-    pub fn new(frame: Frame, active_table: &mut ActivePageTable, temporary_page: &mut TemporaryPage)
-            -> InactivePageTable {
+    pub fn new(
+        frame: Frame,
+        active_table: &mut ActivePageTable,
+        temporary_page: &mut TemporaryPage,
+    ) -> InactivePageTable {
         {
             let table = temporary_page.map_table_frame(frame.clone(), active_table);
 
@@ -126,11 +137,15 @@ pub struct Page {
 impl Page {
     /// Retrieves the page containing a given virtual address.
     pub fn containing_address(address: VirtualAddress) -> Page {
-        assert!(address < 0x0000_8000_0000_0000 ||
-            address >= 0xffff_8000_0000_0000,
-            "invalid address: {:#x}", address);
+        assert!(
+            address < 0x0000_8000_0000_0000 || address >= 0xffff_8000_0000_0000,
+            "invalid address: {:#x}",
+            address
+        );
 
-        Page { index: address / PAGE_SIZE }
+        Page {
+            index: address / PAGE_SIZE,
+        }
     }
 
     /// Returns the start (virtual) address of a page
@@ -163,7 +178,9 @@ impl Add<usize> for Page {
     type Output = Page;
 
     fn add(self, rhs: usize) -> Page {
-        Page { index: self.index + rhs }
+        Page {
+            index: self.index + rhs,
+        }
     }
 }
 
@@ -188,23 +205,23 @@ impl Iterator for PageIter {
 }
 
 /// Remap the kernel
-pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
-    -> ActivePageTable
-        where A: FrameAllocator
+pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> ActivePageTable
+where
+    A: FrameAllocator,
 {
+    let mut scratch_page = TemporaryPage::new(Page { index: 0xabadcafe }, allocator);
 
-    let mut scratch_page = TemporaryPage::new(Page { index: 0xabadcafe },
-        allocator);
-
-    let mut active_table = unsafe {ActivePageTable::new()};
+    let mut active_table = unsafe { ActivePageTable::new() };
     let mut new_table = {
-        let frame = allocator.alloc_frame()
-            .expect("Attempted to allocate a frame for a new page table, but no frames are available!");
+        let frame = allocator.alloc_frame().expect(
+            "Attempted to allocate a frame for a new page table, but no frames are available!",
+        );
         InactivePageTable::new(frame, &mut active_table, &mut scratch_page)
     };
 
     active_table.with(&mut new_table, &mut scratch_page, |mapper| {
-        let elf_sections_tag = boot_info.elf_sections_tag()
+        let elf_sections_tag = boot_info
+            .elf_sections_tag()
             .expect("ELF sections tag required!");
 
         // -- Identity map the kernel sections
@@ -214,9 +231,14 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
                 continue;
             }
 
-            assert!(section.start_address() % PAGE_SIZE == 0, "ELF sections must be page-aligned!");
-            debug!("Mapping section at addr: {:#x}, size: {:#x}",
-                section.addr, section.size);
+            assert!(
+                section.start_address() % PAGE_SIZE == 0,
+                "ELF sections must be page-aligned!"
+            );
+            debug!(
+                "Mapping section at addr: {:#x}, size: {:#x}",
+                section.addr, section.size
+            );
 
             let flags = EntryFlags::from_elf_section_flags(section);
             let start_frame = Frame::containing_address(section.start_address());
@@ -244,7 +266,10 @@ pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     // Create a guard page in place of the old P4 table's page
     let old_p4_page = Page::containing_address(old_table.p4_frame.start_address());
     active_table.unmap(old_p4_page, allocator);
-    info!("kremap: guard page established at {:#x}", old_p4_page.start_address());
+    info!(
+        "kremap: guard page established at {:#x}",
+        old_p4_page.start_address()
+    );
 
     active_table
 }

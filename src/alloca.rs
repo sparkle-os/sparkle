@@ -4,7 +4,7 @@
 
 use spin::Mutex;
 use linked_list_allocator::Heap;
-use alloc::allocator::{Alloc, Layout, AllocErr};
+use alloc::allocator::{Alloc, AllocErr, Layout};
 
 /// Base location of the kheap.
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
@@ -38,7 +38,7 @@ unsafe impl<'a> Alloc for &'a Allocator {
     unsafe fn dealloc(&mut self, ptr: *mut u8, layout: Layout) {
         if let Some(ref mut heap) = *HEAP.lock() {
             heap.deallocate(ptr, layout)
-            // heap.deallocate(ptr, layout.size(), layout.align());
+        // heap.deallocate(ptr, layout.size(), layout.align());
         } else {
             panic!("kheap: attempting dealloc w/ uninitialized heap");
         }

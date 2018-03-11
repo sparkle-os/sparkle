@@ -31,7 +31,7 @@ impl Gdt {
     }
 
     pub fn load(&'static self) {
-        use x86::instructions::tables::{DescriptorTablePointer, lgdt};
+        use x86::instructions::tables::{lgdt, DescriptorTablePointer};
 
         let ptr = DescriptorTablePointer {
             base: self.table.as_ptr() as u64,

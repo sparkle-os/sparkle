@@ -8,7 +8,7 @@ pub mod interrupts;
 pub fn enable_nxe_bit() {
     use x86::registers::msr;
 
-    const NXE_BIT: u64 = 1<<11;
+    const NXE_BIT: u64 = 1 << 11;
     unsafe {
         let efer = msr::rdmsr(msr::IA32_EFER);
         msr::wrmsr(msr::IA32_EFER, efer | NXE_BIT)
@@ -17,7 +17,7 @@ pub fn enable_nxe_bit() {
 
 /// Turn on page write-protect enforcement.
 pub fn enable_wrprot_bit() {
-    use x86::registers::control_regs::{cr0, cr0_write, Cr0};
+    use x86::registers::control_regs::{Cr0, cr0, cr0_write};
     unsafe {
         cr0_write(cr0() | Cr0::WRITE_PROTECT);
     }

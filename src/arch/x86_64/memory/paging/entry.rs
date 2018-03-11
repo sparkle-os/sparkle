@@ -23,7 +23,7 @@ impl Entry {
     pub fn pointed_frame(&self) -> Option<Frame> {
         if self.flags().contains(PRESENT) {
             Some(Frame::containing_address(
-                self.0 as usize & 0x000fffff_fffff000
+                self.0 as usize & 0x000fffff_fffff000,
             ))
         } else {
             None
@@ -32,8 +32,10 @@ impl Entry {
 
     pub fn set(&mut self, frame: Frame, flags: EntryFlags) {
         // Frame physical address must be page-aligned and smaller than 2^52
-        assert!(frame.start_address() & !0x000fffff_fffff000 == 0,
-            "Frame physical addresses must be page-aligned and smaller than 2^52!");
+        assert!(
+            frame.start_address() & !0x000fffff_fffff000 == 0,
+            "Frame physical addresses must be page-aligned and smaller than 2^52!"
+        );
 
         self.0 = (frame.start_address() as u64) | flags.bits();
     }
@@ -56,8 +58,7 @@ bitflags! {
 
 impl EntryFlags {
     pub fn from_elf_section_flags(section: &ElfSection) -> EntryFlags {
-        use multiboot2::{ELF_SECTION_ALLOCATED, ELF_SECTION_WRITABLE,
-            ELF_SECTION_EXECUTABLE};
+        use multiboot2::{ELF_SECTION_ALLOCATED, ELF_SECTION_EXECUTABLE, ELF_SECTION_WRITABLE};
 
         let mut flags = EntryFlags::empty();
 

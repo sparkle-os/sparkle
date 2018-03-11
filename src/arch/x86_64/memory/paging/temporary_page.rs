@@ -1,7 +1,7 @@
 use arch::x86_64::memory::{Frame, FrameAllocator};
-use super::{Page, Table, ActivePageTable};
+use super::{ActivePageTable, Page, Table};
 use super::table::Level1;
-use super::{VirtualAddress};
+use super::VirtualAddress;
 
 pub struct TemporaryPage {
     page: Page,
@@ -10,7 +10,9 @@ pub struct TemporaryPage {
 
 impl TemporaryPage {
     pub fn new<A>(page: Page, allocator: &mut A) -> TemporaryPage
-            where A: FrameAllocator {
+    where
+        A: FrameAllocator,
+    {
         TemporaryPage {
             page: page,
             allocator: TinyAllocator::new(allocator),
@@ -22,8 +24,10 @@ impl TemporaryPage {
     pub fn map(&mut self, frame: Frame, active_table: &mut ActivePageTable) -> VirtualAddress {
         use super::entry::WRITABLE;
 
-        assert!(active_table.page_to_frame(self.page).is_none(),
-            "Temporary page is already mapped!");
+        assert!(
+            active_table.page_to_frame(self.page).is_none(),
+            "Temporary page is already mapped!"
+        );
         active_table.map_to(self.page, frame, WRITABLE, &mut self.allocator);
 
         self.page.start_address()
@@ -31,8 +35,11 @@ impl TemporaryPage {
 
     /// Maps the temporary page to the given page table frame, using the active table.
     /// Returns a &mut reference to the now-mapped table.
-    pub fn map_table_frame(&mut self, frame: Frame, active_table: &mut ActivePageTable)
-            -> &mut Table<Level1> {
+    pub fn map_table_frame(
+        &mut self,
+        frame: Frame,
+        active_table: &mut ActivePageTable,
+    ) -> &mut Table<Level1> {
         unsafe { &mut *(self.map(frame, active_table) as *mut Table<Level1>) }
     }
 
@@ -46,7 +53,9 @@ impl TemporaryPage {
 struct TinyAllocator([Option<Frame>; 3]);
 impl TinyAllocator {
     fn new<A>(allocator: &mut A) -> TinyAllocator
-            where A: FrameAllocator{
+    where
+        A: FrameAllocator,
+    {
         let mut f = || allocator.alloc_frame();
         let frames = [f(), f(), f()];
         TinyAllocator(frames)
