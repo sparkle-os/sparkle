@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "cargo-clippy", allow(needless_return))]
 use core::ptr::Unique;
 use arch::x86_64::memory::{PAGE_SIZE, Frame, FrameAllocator};
 use super::entry::*;

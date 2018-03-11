@@ -1,5 +1,7 @@
 //! Page table entry (meta)data
 
+#![cfg_attr(feature="cargo-clippy", allow(identity_op))]
+
 use multiboot2::ElfSection;
 use arch::x86_64::memory::Frame;
 
@@ -60,13 +62,13 @@ impl EntryFlags {
         let mut flags = EntryFlags::empty();
 
         if section.flags().contains(ELF_SECTION_ALLOCATED) {
-            flags = flags | PRESENT;
+            flags |= PRESENT;
         }
         if section.flags().contains(ELF_SECTION_WRITABLE) {
-            flags = flags | WRITABLE;
+            flags |= WRITABLE;
         }
         if !section.flags().contains(ELF_SECTION_EXECUTABLE) {
-            flags = flags | NO_EXECUTE;
+            flags |= NO_EXECUTE;
         }
 
         flags

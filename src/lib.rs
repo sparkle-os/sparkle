@@ -9,7 +9,6 @@ extern crate log;
 extern crate once;
 #[macro_use]
 extern crate alloc;
-#[allow(unused_extern_crates)]
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
@@ -40,7 +39,7 @@ use alloca::Allocator;
 //
 /// [`alloca`]: alloca/index.html
 #[global_allocator]
-static GLOBAL_ALLOC: Allocator = Allocator;
+static GLOBAL_ALLOC: Allocator = Allocator {};
 
 /// Kernel main function. Called by the bootstrapping assembly stub.
 #[no_mangle]
@@ -58,6 +57,7 @@ pub extern fn kernel_main(multiboot_info_pointer: usize) {
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
 
+    #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
 }
 

@@ -3,6 +3,8 @@
 //! Extremely ripped off from Phil Oppermann's tutorials, because I don't feel like writing
 //! a paging system off the top of my head today.
 
+#![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
+
 use core::ops::{Add, Deref, DerefMut};
 use multiboot2::BootInformation;
 use super::PAGE_SIZE;
@@ -116,7 +118,6 @@ impl InactivePageTable {
 }
 
 /// A representation of a virtual page.
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Page {
     index: usize,

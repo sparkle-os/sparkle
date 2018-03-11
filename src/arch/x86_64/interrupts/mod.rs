@@ -53,7 +53,7 @@ pub fn init(memory_controller: &mut MemoryController) {
         let mut gdt = Gdt::new();
 
         code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
-        tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
+        tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(tss));
 
         gdt
     });
@@ -76,5 +76,6 @@ extern "x86-interrupt" fn double_fault_handler(
 {
     println!("int[8]: fault: double:\n{:#?}", stack_frame);
 
+    #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
 }

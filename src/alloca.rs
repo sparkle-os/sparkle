@@ -1,5 +1,7 @@
 //! Wires rust up to the kheap, so that `alloc::` works.
 
+#![cfg_attr(feature="cargo-clippy", allow(inconsistent_digit_grouping))]
+
 use spin::Mutex;
 use linked_list_allocator::Heap;
 use alloc::allocator::{Alloc, Layout, AllocErr};
