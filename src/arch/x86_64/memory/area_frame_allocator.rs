@@ -53,6 +53,7 @@ impl FrameAllocator for AreaFrameAllocator {
 
     /// EXTREME BADNESS
     /// TODO: fix this
+    #[allow(unused_variables)]
     fn dealloc_frame(&mut self, frame: Frame) {
         unimplemented!();
     }

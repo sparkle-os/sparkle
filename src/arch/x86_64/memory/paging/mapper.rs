@@ -117,6 +117,7 @@ impl Mapper {
     }
 
     /// Unmaps a virtual page.
+    #[allow(unused_variables)]
     pub fn unmap<A>(&mut self, page: Page, allocator: &mut A)
             where A: FrameAllocator {
         assert!(self.translate(page.start_address()).is_some(),
