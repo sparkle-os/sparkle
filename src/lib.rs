@@ -1,6 +1,7 @@
 #![feature(asm, ptr_internals, const_fn, lang_items, const_unique_new,
            alloc, allocator_api, global_allocator, abi_x86_interrupt)]
 #![no_std]
+#![cfg_attr(feature = "cargo-clippy", allow(large_digit_groups))]
 
 #[macro_use]
 extern crate log;
