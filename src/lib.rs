@@ -69,7 +69,7 @@ pub extern "C" fn eh_personality() {}
 /// Dumps panics to the console.
 #[lang = "panic_fmt"]
 #[no_mangle]
-pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
+pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> ! {
     vga_console::WRITER
         .lock()
         .set_style(vga_console::CharStyle::new(
@@ -77,7 +77,7 @@ pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line:
             vga_console::Color::Red,
         ));
     println!();
-    println!("!!! PANIC in {} on line {} !!!", file, line);
+    println!("!!! PANIC in {} {}:{} !!!", file, line, column);
     println!("  {}", fmt);
 
     unsafe {
