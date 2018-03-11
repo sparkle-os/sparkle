@@ -1,16 +1,17 @@
 //! A basic console driver, using the VGA text-mode buffer.
 
 use core::fmt;
-use core::ptr::Unique;
 use spin::Mutex;
 use volatile::Volatile;
 use x86::instructions::port as io;
 
-pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
-    column_pos: 0, row_pos: 0,
-    style: CharStyle::new(Color::Cyan, Color::DarkGray),
-    buffer: unsafe {Unique::new_unchecked(0xb8000 as *mut _)},
-});
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        column_pos: 0, row_pos: 0,
+        style: CharStyle::new(Color::Cyan, Color::DarkGray),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
+}
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
@@ -67,7 +68,7 @@ pub struct Writer {
     /// Current style we're writing with
     style: CharStyle,
     /// This is set up on initialization to shadow `0xb8000`, the VGA text-mode buffer.
-    buffer: Unique<Buffer>,
+    buffer: &'static mut Buffer,
 }
 
 #[allow(dead_code)]
@@ -82,7 +83,7 @@ impl Writer {
                 let col = self.column_pos;
                 let style = self.style;
 
-                self.buffer().chars[row][col].write(VgaChar {
+                self.buffer.chars[row][col].write(VgaChar {
                     ascii_char: byte,
                     style: style,
                 });
@@ -98,7 +99,7 @@ impl Writer {
         self.row_pos = row; self.column_pos = col;
         let style = self.style;
 
-        self.buffer().chars[row][col].write(VgaChar {ascii_char: byte, style: style});
+        self.buffer.chars[row][col].write(VgaChar {ascii_char: byte, style: style});
     }
 
     /// Clear the VGA buffer.
@@ -106,7 +107,7 @@ impl Writer {
         let clear_style = VgaChar {ascii_char:  b' ', style: self.style};
         for row in 0..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
-                self.buffer().chars[row][col].write(clear_style);
+                self.buffer.chars[row][col].write(clear_style);
             }
         }
     }
@@ -149,7 +150,7 @@ impl Writer {
     fn clear_row(&mut self, row: usize) {
         let clear_style = VgaChar {ascii_char:  b' ', style: self.style};
         for col in 0..BUFFER_WIDTH {
-            self.buffer().chars[row][col].write(clear_style);
+            self.buffer.chars[row][col].write(clear_style);
         }
     }
 
@@ -157,19 +158,14 @@ impl Writer {
     fn scroll(&mut self) {
         for row in 0..(BUFFER_HEIGHT - 1) {
             for col in 0..BUFFER_WIDTH {
-                let c = self.buffer().chars[row + 1][col].read();
-                self.buffer().chars[row][col].write(c);
+                let c = self.buffer.chars[row + 1][col].read();
+                self.buffer.chars[row][col].write(c);
             }
         }
 
         self.clear_row(BUFFER_HEIGHT - 1);
         self.column_pos = 0;
         self.row_pos = BUFFER_HEIGHT - 1;
-    }
-
-    /// Get the underlying buffer.
-    fn buffer(&mut self) -> &mut Buffer {
-        unsafe { self.buffer.as_mut() }
     }
 }
 
