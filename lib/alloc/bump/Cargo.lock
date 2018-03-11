@@ -1,4 +1,4 @@
-[root]
+[[package]]
 name = "sparkle_bump_alloc"
 version = "0.1.0"
 
