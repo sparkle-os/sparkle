@@ -1,12 +1,5 @@
-#![feature(asm)]
-#![feature(unique)]
-#![feature(const_fn)]
-#![feature(lang_items)]
-#![feature(const_unique_new)]
-#![feature(alloc)]
-#![feature(allocator_api)]
-#![feature(global_allocator)]
-#![feature(abi_x86_interrupt)]
+#![feature(asm, ptr_internals, const_fn, lang_items, const_unique_new,
+           alloc, allocator_api, global_allocator, abi_x86_interrupt)]
 #![no_std]
 
 #[macro_use]
@@ -41,7 +34,6 @@ use arch::x86_64::device::vga_console;
 use arch::x86_64::memory;
 use arch::x86_64::interrupts;
 use alloca::Allocator;
-use alloc::boxed::Box;
 
 /// Our globally-visible allocator. Plugs into whatever allocator we set up in [`alloca`].
 //
