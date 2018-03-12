@@ -148,8 +148,8 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
     );
 
     // Enable required CPU features
-    x86_64::enable_nxe_bit(); // Enable NO_EXECUTE pages
-    x86_64::enable_wrprot_bit(); // Disable writing to non-WRITABLE pages
+    x86_64::bits::enable_nxe(); // Enable NO_EXECUTE pages
+    x86_64::bits::enable_wrprot(); // Disable writing to non-WRITABLE pages
 
     let mut active_table = paging::remap_kernel(&mut frame_allocator, boot_info);
     info!("paging: remapped kernel");
