@@ -1,7 +1,7 @@
 arch := x86_64
 kernel := build/$(arch)/kernel.bin
 iso := build/$(arch)/os.iso
-rs_target := $(arch)-unknown-none
+rs_target := $(arch)-sparkle
 rs_kernel := target/$(rs_target)/debug/libsparkle_os.a
 
 asm_src := $(wildcard src/arch/$(arch)/bload/*.asm)
