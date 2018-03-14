@@ -46,4 +46,4 @@ build/$(arch)/%.o: src/arch/$(arch)/%.asm
 	nasm -felf64 $< -o $@
 
 doc:
-	cargo rustdoc --lib -- --no-defaults --passes collapse-docs --passes unindent-comments --passes strip-priv-imports
+	cargo rustdoc --lib -- --document-private-items
