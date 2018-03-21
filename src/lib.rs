@@ -51,12 +51,15 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
 
     let boot_info = unsafe { multiboot2::load(multiboot_info_pointer) };
 
+    // initialize paging, remap kernel
     let mut mem_ctrl = memory::init(boot_info);
     info!("memory::init() success!");
 
+    // initialize idt
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
 
+    // spin
     #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
 }
@@ -69,7 +72,12 @@ pub extern "C" fn eh_personality() {}
 /// Dumps panics to the console.
 #[lang = "panic_fmt"]
 #[no_mangle]
-pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> ! {
+pub extern "C" fn panic_fmt(
+    fmt: core::fmt::Arguments,
+    file: &'static str,
+    line: u32,
+    column: u32,
+) -> ! {
     vga_console::WRITER
         .lock()
         .set_style(vga_console::CharStyle::new(
