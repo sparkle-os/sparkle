@@ -1,4 +1,5 @@
 use arch::x86_64::ports::Port;
+use core::fmt;
 
 pub struct SerialPort {
     data_port: Port<u8>,
@@ -50,5 +51,15 @@ impl SerialPort {
     pub fn write_byte(&mut self, byte: u8) {
         while !self.is_tx_empty() {}
         unsafe { self.data_port.write(byte) }
+    }
+}
+
+impl fmt::Write for SerialPort {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        for byte in s.bytes() {
+            self.write_byte(byte);
+        }
+
+        Ok(())
     }
 }
