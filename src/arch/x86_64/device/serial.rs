@@ -1,5 +1,10 @@
 use arch::x86_64::ports::Port;
 use core::fmt;
+use spin::RwLock;
+
+lazy_static! {
+    pub static ref COM1: RwLock<SerialPort> = RwLock::new(SerialPort::new(0x3f8));
+}
 
 pub struct SerialPort {
     data_port: Port<u8>,
