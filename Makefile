@@ -16,6 +16,9 @@ all: $(kernel)
 clean:
 	rm -r build/ target/
 
+check:
+	RUST_TARGET_PATH=$(shell pwd) xargo check --target $(rs_target)
+
 run: $(iso)
 	qemu-system-x86_64 -cdrom $(iso) -s
 
