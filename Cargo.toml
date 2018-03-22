@@ -29,6 +29,8 @@ features = ["spin_no_std"]
 path = "lib/once"
 
 [features]
-default = ["logging-serial", "logging-console"]
+default = ["logging-serial", "logging-console", "panic-serial", "panic-console"]
 logging-serial = []
 logging-console = []
+panic-serial = []
+panic-console = []

@@ -30,7 +30,7 @@ mod misc;
 mod logger;
 mod arch;
 
-use arch::x86_64::device::vga_console;
+use arch::x86_64::device::{serial, vga_console};
 use arch::x86_64::memory;
 use arch::x86_64::interrupts;
 use alloca::Allocator;
@@ -59,6 +59,8 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
 
+    panic!("foo");
+
     // spin
     #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
@@ -78,15 +80,25 @@ pub extern "C" fn panic_fmt(
     line: u32,
     column: u32,
 ) -> ! {
-    vga_console::WRITER
-        .lock()
-        .set_style(vga_console::CharStyle::new(
-            vga_console::Color::Black,
-            vga_console::Color::Red,
-        ));
-    println!();
-    println!("!!! PANIC in {} {}:{} !!!", file, line, column);
-    println!("  {}", fmt);
+    #[cfg(feature = "panic-console")]
+    {
+        vga_console::WRITER
+            .lock()
+            .set_style(vga_console::CharStyle::new(
+                vga_console::Color::Black,
+                vga_console::Color::Red,
+            ));
+        println!();
+        println!("!!! PANIC in {} {}:{} !!!", file, line, column);
+        println!("  {}", fmt);
+    }
+
+    #[cfg(feature = "panic-serial")]
+    {
+        use core::fmt::Write;
+        let mut port = serial::COM1.write();
+        let _ = write!(port, "\n!!! PANIC in {} {}:{} !!!\n  {}", file, line, column, fmt);
+    }
 
     unsafe {
         loop {
