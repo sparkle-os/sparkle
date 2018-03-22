@@ -27,3 +27,8 @@ features = ["spin_no_std"]
 
 [dependencies.once]
 path = "lib/once"
+
+[features]
+default = ["logging-serial", "logging-console"]
+logging-serial = []
+logging-console = []
