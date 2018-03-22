@@ -1,34 +1,32 @@
 //! A basic console logging backend for the `log` crate.
 
 use log;
-use log::{Log, LogLevelFilter, LogMetadata, LogRecord};
-use log::SetLoggerError;
+use log::{Log, LevelFilter, Metadata, Record, SetLoggerError};
 use arch::x86_64::device::serial::COM1;
+
+static LOGGER: KernelLogger = KernelLogger;
 
 /// Initializes the logger at kernel boot.
 pub fn init() -> Result<(), SetLoggerError> {
-    unsafe {
-        log::set_logger_raw(|max_log_level| {
-            static LOGGER: KernelLogger = KernelLogger;
-            max_log_level.set(LOGGER.filter());
-            &LOGGER
-        })
-    }
+    log::set_logger(&LOGGER)?;
+    log::set_max_level(LOGGER.filter());
+
+    Ok(())
 }
 
 /// The kernel-level logger.
 struct KernelLogger;
 impl KernelLogger {
-    fn filter(&self) -> LogLevelFilter {
-        LogLevelFilter::Debug
+    fn filter(&self) -> LevelFilter {
+        LevelFilter::Debug
     }
 }
 impl Log for KernelLogger {
-    fn enabled(&self, metadata: &LogMetadata) -> bool {
+    fn enabled(&self, metadata: &Metadata) -> bool {
         metadata.level() <= ::misc::LOG_LEVEL
     }
 
-    fn log(&self, record: &LogRecord) {
+    fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
             #[cfg(feature = "logging-serial")]
             {
@@ -41,4 +39,6 @@ impl Log for KernelLogger {
             }
         }
     }
+
+    fn flush(&self) {}
 }
