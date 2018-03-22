@@ -59,8 +59,6 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
 
-    panic!("foo");
-
     // spin
     #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
