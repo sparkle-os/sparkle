@@ -95,7 +95,11 @@ pub extern "C" fn panic_fmt(
     {
         use core::fmt::Write;
         let mut port = serial::COM1.write();
-        let _ = write!(port, "\n!!! PANIC in {} {}:{} !!!\n  {}", file, line, column, fmt);
+        let _ = write!(
+            port,
+            "\n!!! PANIC in {} {}:{} !!!\n  {}",
+            file, line, column, fmt
+        );
     }
 
     unsafe {

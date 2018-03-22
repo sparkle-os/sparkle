@@ -1,7 +1,7 @@
 //! A basic console logging backend for the `log` crate.
 
 use log;
-use log::{Log, LevelFilter, Metadata, Record, SetLoggerError};
+use log::{LevelFilter, Log, Metadata, Record, SetLoggerError};
 use arch::x86_64::device::serial::COM1;
 
 static LOGGER: KernelLogger = KernelLogger;
