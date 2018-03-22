@@ -8,6 +8,7 @@ asm_src := $(wildcard src/arch/$(arch)/bload/*.asm)
 asm_obj := $(patsubst src/arch/$(arch)/bload/%.asm, build/$(arch)/bload/%.o, $(asm_src))
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
+qemu_flags := -serial mon:stdio
 
 .PHONY: all clean run iso doc
 
@@ -20,13 +21,13 @@ check:
 	RUST_TARGET_PATH=$(shell pwd) xargo check --target $(rs_target)
 
 run: $(iso)
-	qemu-system-x86_64 -cdrom $(iso) -s
+	qemu-system-x86_64 $(qemu_flags) -cdrom $(iso) -s
 
 run-trif: $(iso)
-	qemu-system-x86_64 -cdrom $(iso) -no-reboot -d int -s
+	qemu-system-x86_64 $(qemu_flags) -cdrom $(iso) -no-reboot -d int -s
 
 debug: $(iso)
-	qemu-system-x86_64 -cdrom $(iso) -s -S
+	qemu-system-x86_64 $(qemu_flags) -cdrom $(iso) -s -S
 
 iso: $(iso)
 
