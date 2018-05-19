@@ -111,9 +111,9 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
         .elf_sections_tag()
         .expect("multiboot: ELF sections tag required");
 
-    info!("memory areas:");
+    debug!("memory areas:");
     for area in memory_map_tag.memory_areas() {
-        info!("  start: {:#x}, length: {:#x}", area.base_addr, area.length);
+        debug!("  start: {:#x}, length: {:#x}", area.base_addr, area.length);
     }
 
     let kernel_start = elf_sections_tag
@@ -129,11 +129,11 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
         .max()
         .unwrap();
 
-    info!(
+    debug!(
         "kernel start: {:#x}, kernel end: {:#x}",
         kernel_start, kernel_end
     );
-    info!(
+    debug!(
         "multiboot start: {:#x}, multiboot end: {:#x}",
         boot_info.start_address(),
         boot_info.end_address()

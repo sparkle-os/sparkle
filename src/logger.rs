@@ -18,7 +18,7 @@ pub fn init() -> Result<(), SetLoggerError> {
 struct KernelLogger;
 impl KernelLogger {
     fn filter(&self) -> LevelFilter {
-        LevelFilter::Debug
+        ::misc::LOG_LEVEL.to_level_filter()
     }
 }
 impl Log for KernelLogger {

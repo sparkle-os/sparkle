@@ -6,4 +6,4 @@ use log;
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// The highest log level to dump to the console. Baked in at compile time for now.
-pub const LOG_LEVEL: log::Level = log::Level::Info;
+pub const LOG_LEVEL: log::Level = log::Level::Debug;
