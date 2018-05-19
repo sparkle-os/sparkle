@@ -122,6 +122,13 @@ impl Writer {
         self.style
     }
 
+    pub fn styled(&mut self) -> StyledWriter {
+        StyledWriter {
+            style: self.style,
+            inner: self,
+        }
+    }
+
     /// Move the _console cursor_ (blinky bar) to (row, col).
     fn move_cursor(&mut self, row: usize, col: usize) {
         assert!(
@@ -194,6 +201,25 @@ impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         let sty = self.style();
         self.write_str_with_style(s, sty);
+
+        Ok(())
+    }
+}
+
+pub struct StyledWriter<'a> {
+    inner: &'a mut Writer,
+    style: CharStyle,
+}
+
+impl<'a> StyledWriter<'a> {
+    pub fn set_style(mut self, style: CharStyle) -> Self {
+        self.style = style; self
+    }
+}
+
+impl<'a> fmt::Write for StyledWriter<'a> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.inner.write_str_with_style(s, self.style);
 
         Ok(())
     }
