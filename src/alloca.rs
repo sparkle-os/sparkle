@@ -4,7 +4,8 @@
 
 use spin::Mutex;
 use linked_list_allocator::Heap;
-use alloc::allocator::{Alloc, AllocErr, Layout};
+use core::ptr::NonNull;
+use core::alloc::{GlobalAlloc, Alloc, AllocErr, Layout, Opaque};
 
 /// Base location of the kheap.
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
@@ -23,29 +24,37 @@ pub unsafe fn heap_init(start: usize, size: usize) {
 pub struct Allocator;
 
 unsafe impl<'a> Alloc for &'a Allocator {
-    #[inline]
-    unsafe fn alloc(&mut self, layout: Layout) -> Result<*mut u8, AllocErr> {
+    unsafe fn alloc(&mut self, layout: Layout) -> Result<NonNull<Opaque>, AllocErr> {
         if let Some(ref mut heap) = *HEAP.lock() {
-            // heap.allocate(layout.size(), layout.align())
-            //     .ok_or(AllocErr::Exhausted { request: layout })
             heap.allocate_first_fit(layout)
         } else {
             panic!("kheap: attempting alloc w/ uninitialized heap");
         }
     }
 
-    #[inline]
-    unsafe fn dealloc(&mut self, ptr: *mut u8, layout: Layout) {
+    unsafe fn dealloc(&mut self, ptr: NonNull<Opaque>, layout: Layout) {
         if let Some(ref mut heap) = *HEAP.lock() {
             heap.deallocate(ptr, layout)
-        // heap.deallocate(ptr, layout.size(), layout.align());
         } else {
             panic!("kheap: attempting dealloc w/ uninitialized heap");
         }
     }
+}
 
-    #[inline]
-    fn oom(&mut self, err: AllocErr) -> ! {
-        panic!("kheap OOM: {:?}", err);
+unsafe impl GlobalAlloc for Allocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut Opaque {
+        if let Some(ref mut heap) = *HEAP.lock() {
+            heap.allocate_first_fit(layout).ok().map_or(0 as *mut Opaque, |ptr| {ptr.as_ptr()})
+        } else {
+            panic!("kheap: attempting alloc w/ uninitialized heap");
+        }
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut Opaque, layout: Layout) {
+        if let Some(ref mut heap) = *HEAP.lock() {
+            heap.deallocate(NonNull::new_unchecked(ptr), layout)
+        } else {
+            panic!("kheap: attempting dealloc w/ uninitialized heap");
+        }
     }
 }

@@ -152,7 +152,7 @@ error:
 	mov byte  [0xb800a], al
 	hlt
 
-;;; Smol stack (64 bytes) just to make stuff work atm
+;;; Smol stack (64 bytes) to get the kernel started
 section .bss
 align 4096
 p4_table:

@@ -119,3 +119,10 @@ pub extern "C" fn _Unwind_Resume() -> ! {
         }
     };
 }
+
+/// OOM message
+#[lang = "oom"]
+#[no_mangle]
+pub extern fn oom() -> ! {
+    panic!("kheap: allocation failed (OOM)");
+}
