@@ -1,7 +1,7 @@
 //! A basic console logging backend for the `log` crate.
 
 use log;
-use log::{LevelFilter, Log, Metadata, Record, SetLoggerError};
+use log::{LevelFilter, Level, Log, Metadata, Record, SetLoggerError};
 use arch::x86_64::device::serial::COM1;
 
 static LOGGER: KernelLogger = KernelLogger;
@@ -18,7 +18,7 @@ pub fn init() -> Result<(), SetLoggerError> {
 struct KernelLogger;
 impl KernelLogger {
     fn filter(&self) -> LevelFilter {
-        LevelFilter::Debug
+        ::misc::LOG_LEVEL.to_level_filter()
     }
 }
 impl Log for KernelLogger {
@@ -35,7 +35,20 @@ impl Log for KernelLogger {
             }
             #[cfg(feature = "logging-console")]
             {
-                println!("{}: {}", record.level(), record.args());
+                use core::fmt::Write;
+                use ::arch::x86_64::device::vga_console::{WRITER, CharStyle, Color};
+
+                let mut wtr = WRITER.lock();
+                let sty = CharStyle::new(match record.level() {
+                    Level::Error => Color::Red,
+                    Level::Warn => Color::Magenta,
+                    Level::Info => Color::Green,
+                    Level::Debug => Color::Cyan,
+                    Level::Trace => Color::White,
+                }, Color::DarkGray);
+                write!(wtr.styled().set_style(sty), "{:>5}", record.level());
+
+                writeln!(wtr, ": {}", record.args());
             }
         }
     }

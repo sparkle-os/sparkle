@@ -76,18 +76,14 @@ pub struct Writer {
 impl Writer {
     /// Write a single byte into the VGA buffer at the cursor location.
     /// Increments the cursor location and wraps to the next line if necessary.
-    pub fn write_byte(&mut self, byte: u8) {
+    pub fn write_byte(&mut self, byte: u8, style: CharStyle) {
         match byte {
             b'\n' => self.new_line(),
             byte => {
                 let row = self.row_pos;
                 let col = self.column_pos;
-                let style = self.style;
 
-                self.buffer.chars[row][col].write(VgaChar {
-                    ascii_char: byte,
-                    style: style,
-                });
+                self.write_byte_at(byte, row, col, style);
 
                 self.column_pos += 1;
                 if self.column_pos >= BUFFER_WIDTH {
@@ -98,14 +94,10 @@ impl Writer {
     }
 
     /// Write a single byte at (row, col).
-    pub fn write_byte_at(&mut self, byte: u8, row: usize, col: usize) {
-        self.row_pos = row;
-        self.column_pos = col;
-        let style = self.style;
-
+    pub fn write_byte_at(&mut self, byte: u8, row: usize, col: usize, style: CharStyle) {
         self.buffer.chars[row][col].write(VgaChar {
             ascii_char: byte,
-            style: style,
+            style,
         });
     }
 
@@ -126,8 +118,15 @@ impl Writer {
         self.style = style;
     }
 
-    pub fn get_style(&self) -> CharStyle {
+    pub fn style(&self) -> CharStyle {
         self.style
+    }
+
+    pub fn styled(&mut self) -> StyledWriter {
+        StyledWriter {
+            style: self.style,
+            inner: self,
+        }
     }
 
     /// Move the _console cursor_ (blinky bar) to (row, col).
@@ -186,17 +185,41 @@ impl Writer {
         self.column_pos = 0;
         self.row_pos = BUFFER_HEIGHT - 1;
     }
-}
 
-impl fmt::Write for Writer {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
+    pub fn write_str_with_style(&mut self, s: &str, style: CharStyle) {
         for byte in s.bytes() {
-            self.write_byte(byte);
+            self.write_byte(byte, style);
         }
 
         let row = self.row_pos;
         let col = self.column_pos;
         self.move_cursor(row, col);
+    }
+}
+
+impl fmt::Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        let sty = self.style();
+        self.write_str_with_style(s, sty);
+
+        Ok(())
+    }
+}
+
+pub struct StyledWriter<'a> {
+    inner: &'a mut Writer,
+    style: CharStyle,
+}
+
+impl<'a> StyledWriter<'a> {
+    pub fn set_style(mut self, style: CharStyle) -> Self {
+        self.style = style; self
+    }
+}
+
+impl<'a> fmt::Write for StyledWriter<'a> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.inner.write_str_with_style(s, self.style);
 
         Ok(())
     }
