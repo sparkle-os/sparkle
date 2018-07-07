@@ -63,8 +63,11 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     info!("int: initialized idt");
 
     // spin
-    #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
-    loop {}
+    unsafe {
+        loop {
+            arch::x86_64::halt();
+        }
+    }
 }
 
 /// Related to stack landing pads. Don't care, do nothing.
@@ -126,7 +129,7 @@ pub extern "C" fn panic(info: &PanicInfo) -> ! {
 
     unsafe {
         loop {
-            x86::instructions::halt();
+            arch::x86_64::halt();
         }
     };
 }
@@ -137,7 +140,7 @@ pub extern "C" fn panic(info: &PanicInfo) -> ! {
 pub extern "C" fn _Unwind_Resume() -> ! {
     unsafe {
         loop {
-            x86::instructions::halt();
+            arch::x86_64::halt();
         }
     };
 }

@@ -1,4 +1,4 @@
-use arch::x86_64::ports::Port;
+use x86::instructions::port::Port;
 use core::fmt;
 use spin::RwLock;
 

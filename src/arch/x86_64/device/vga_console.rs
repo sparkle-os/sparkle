@@ -3,7 +3,7 @@
 use core::fmt;
 use spin::Mutex;
 use volatile::Volatile;
-use x86::instructions::port as io;
+use x86::instructions::port::Port;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
@@ -143,11 +143,11 @@ impl Writer {
         let pos: u16 = ((row * 80) + col) as u16;
         // Lovingly ripped off from wiki.osdev.org/Text_Mode_Cursor
         unsafe {
-            io::outb(0x3d4, 0x0F);
-            io::outb(0x3d5, (pos & 0xff) as u8);
+            Port::new(0x3d4).write(0x0Fu8);
+            Port::new(0x3d5).write((pos & 0xff) as u8);
 
-            io::outb(0x3d4, 0x0e);
-            io::outb(0x3d5, ((pos >> 8) & 0xff) as u8);
+            Port::new(0x3d4).write(0x0eu8);
+            Port::new(0x3d5).write(((pos >> 8) & 0xff) as u8);
         }
     }
 

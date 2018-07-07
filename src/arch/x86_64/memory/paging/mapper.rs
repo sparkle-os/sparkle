@@ -144,7 +144,7 @@ impl Mapper {
         p1[page.p1_index()].set_unused();
 
         use x86::instructions::tlb;
-        tlb::flush(::x86::VirtualAddress(page.start_address()));
+        tlb::flush(::x86::VirtAddr::new(page.start_address() as u64));
 
         // TODO free p(1,2,3) table if empty
         // allocator.dealloc_frame(frame);

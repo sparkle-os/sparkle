@@ -57,11 +57,11 @@ impl ActivePageTable {
         F: FnOnce(&mut Mapper),
     {
         use x86::instructions::tlb;
-        use x86::registers::control_regs;
+        use x86::registers::control::Cr3;
 
         {
             // Backup the original P4 pointer
-            let backup = Frame::containing_address(control_regs::cr3().0 as usize);
+            let backup = Frame::containing_address(Cr3::read().0.start_address().as_u64() as usize);
 
             // Map a scratch page to the current p4 table
             let p4_table = scratch_page.map_table_frame(backup.clone(), self);
@@ -86,15 +86,18 @@ impl ActivePageTable {
     /// Note: We don't need to flush the TLB here, as the CPU automatically flushes
     /// the TLB when the P4 table is switched.
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
-        use x86::registers::control_regs;
+        use x86::registers::control::Cr3;
+        use x86::PhysAddr;
+        use x86::structures::paging::PhysFrame;
 
         let old_table = InactivePageTable {
-            p4_frame: Frame::containing_address(control_regs::cr3().0 as usize),
+            p4_frame: Frame::containing_address(Cr3::read().0.start_address().as_u64() as usize),
         };
 
         unsafe {
-            control_regs::cr3_write(
-                ::x86::PhysicalAddress(new_table.p4_frame.start_address() as u64),
+            Cr3::write(
+                PhysFrame::from_start_address(PhysAddr::new(new_table.p4_frame.start_address() as u64)).unwrap(),
+                Cr3::read().1,
             );
         }
 
