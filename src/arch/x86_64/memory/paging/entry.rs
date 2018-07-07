@@ -58,17 +58,17 @@ bitflags! {
 
 impl EntryFlags {
     pub fn from_elf_section_flags(section: &ElfSection) -> EntryFlags {
-        use multiboot2::{ELF_SECTION_ALLOCATED, ELF_SECTION_EXECUTABLE, ELF_SECTION_WRITABLE};
+        use multiboot2::ElfSectionFlags;
 
         let mut flags = EntryFlags::empty();
 
-        if section.flags().contains(ELF_SECTION_ALLOCATED) {
+        if section.flags().contains(ElfSectionFlags::ALLOCATED) {
             flags |= EntryFlags::PRESENT;
         }
-        if section.flags().contains(ELF_SECTION_WRITABLE) {
+        if section.flags().contains(ElfSectionFlags::WRITABLE) {
             flags |= EntryFlags::WRITABLE;
         }
-        if !section.flags().contains(ELF_SECTION_EXECUTABLE) {
+        if !section.flags().contains(ElfSectionFlags::EXECUTABLE) {
             flags |= EntryFlags::NO_EXECUTE;
         }
 

@@ -232,17 +232,17 @@ where
             }
 
             assert!(
-                section.start_address() % PAGE_SIZE == 0,
+                section.start_address() as usize % PAGE_SIZE == 0,
                 "ELF sections must be page-aligned!"
             );
             debug!(
                 "Mapping section at addr: {:#x}, size: {:#x}",
-                section.addr, section.size
+                section.start_address(), section.size()
             );
 
-            let flags = EntryFlags::from_elf_section_flags(section);
-            let start_frame = Frame::containing_address(section.start_address());
-            let end_frame = Frame::containing_address(section.end_address() - 1);
+            let flags = EntryFlags::from_elf_section_flags(&section);
+            let start_frame = Frame::containing_address(section.start_address() as usize);
+            let end_frame = Frame::containing_address(section.end_address() as usize - 1);
             for frame in Frame::range_inclusive(start_frame, end_frame) {
                 mapper.identity_map(frame, flags, allocator);
             }

@@ -55,7 +55,7 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     let boot_info = unsafe { multiboot2::load(multiboot_info_pointer) };
 
     // initialize paging, remap kernel
-    let mut mem_ctrl = memory::init(boot_info);
+    let mut mem_ctrl = memory::init(&boot_info);
     info!("memory::init() success!");
 
     // initialize idt
