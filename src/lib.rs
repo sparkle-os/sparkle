@@ -1,5 +1,7 @@
-#![feature(asm, ptr_internals, const_fn, lang_items, const_unique_new, alloc, allocator_api,
-           global_allocator, abi_x86_interrupt)]
+#![feature(
+    asm, ptr_internals, const_fn, lang_items, const_unique_new, alloc, allocator_api,
+    global_allocator, abi_x86_interrupt, panic_implementation, panic_info_message
+)]
 #![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(large_digit_groups))]
 
@@ -26,14 +28,15 @@ extern crate x86_64 as x86;
 #[macro_use]
 pub mod macros;
 mod alloca;
-mod misc;
-mod logger;
 mod arch;
+mod logger;
+mod misc;
 
-use arch::x86_64::device::{serial, vga_console};
-use arch::x86_64::memory;
-use arch::x86_64::interrupts;
 use alloca::Allocator;
+use arch::x86_64::device::{serial, vga_console};
+use arch::x86_64::interrupts;
+use arch::x86_64::memory;
+use core::panic::PanicInfo;
 
 /// Our globally-visible allocator. Plugs into whatever allocator we set up in [`alloca`].
 //
@@ -59,6 +62,8 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
 
+    panic!("~~~ HACK THE PLANET ~~~");
+
     // spin
     #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
@@ -70,14 +75,9 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
 pub extern "C" fn eh_personality() {}
 
 /// Dumps panics to the console.
-#[lang = "panic_fmt"]
+#[panic_implementation]
 #[no_mangle]
-pub extern "C" fn panic_fmt(
-    fmt: core::fmt::Arguments,
-    file: &'static str,
-    line: u32,
-    column: u32,
-) -> ! {
+pub extern "C" fn panic(info: &PanicInfo) -> ! {
     #[cfg(feature = "panic-console")]
     {
         vga_console::WRITER
@@ -87,19 +87,43 @@ pub extern "C" fn panic_fmt(
                 vga_console::Color::Red,
             ));
         println!();
-        println!("!!! PANIC in {} {}:{} !!!", file, line, column);
-        println!("  {}", fmt);
+
+        if let Some(location) = info.location() {
+            println!(
+                "!!! PANIC in {} {}:{} !!!",
+                location.file(),
+                location.line(),
+                location.column()
+            );
+        } else {
+            println!("!!! PANIC at unknown location !!!");
+        }
+
+        if let Some(message) = info.message() {
+            println!("  {}", message);
+        }
     }
 
     #[cfg(feature = "panic-serial")]
     {
         use core::fmt::Write;
         let mut port = serial::COM1.write();
-        let _ = write!(
-            port,
-            "\n!!! PANIC in {} {}:{} !!!\n  {}",
-            file, line, column, fmt
-        );
+
+        if let Some(location) = info.location() {
+            let _ = writeln!(
+                port,
+                "!!! PANIC in {} {}:{} !!!",
+                location.file(),
+                location.line(),
+                location.column()
+            );
+        } else {
+            let _ = writeln!(port, "!!! PANIC at unknown location !!!");
+        }
+
+        if let Some(message) = info.message() {
+            let _ = writeln!(port, "  {}", message);
+        }
     }
 
     unsafe {
@@ -123,6 +147,6 @@ pub extern "C" fn _Unwind_Resume() -> ! {
 /// OOM message
 #[lang = "oom"]
 #[no_mangle]
-pub extern fn oom() -> ! {
+pub extern "C" fn oom() -> ! {
     panic!("kheap: allocation failed (OOM)");
 }
