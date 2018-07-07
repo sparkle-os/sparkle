@@ -46,9 +46,9 @@ impl Log for KernelLogger {
                     Level::Debug => Color::Cyan,
                     Level::Trace => Color::White,
                 }, Color::DarkGray);
-                write!(wtr.styled().set_style(sty), "{:>5}", record.level());
+                let _ = write!(wtr.styled().set_style(sty), "{:>5}", record.level());
 
-                writeln!(wtr, ": {}", record.args());
+                let _ = writeln!(wtr, ": {}", record.args());
             }
         }
     }
