@@ -15,7 +15,7 @@ mod table;
 mod mapper;
 mod temporary_page;
 
-pub use self::entry::*;
+pub use self::entry::{Entry, EntryFlags};
 use self::table::Table;
 use self::temporary_page::TemporaryPage;
 use self::mapper::Mapper;
@@ -67,14 +67,14 @@ impl ActivePageTable {
             let p4_table = scratch_page.map_table_frame(backup.clone(), self);
 
             // Overwrite main P4 recursive mapping
-            self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE);
+            self.p4_mut()[511].set(table.p4_frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
             tlb::flush_all(); // flush *all* TLBs to prevent fuckiness
 
             // Execute f in context of the new page table
             f(self);
 
             // Restore the original pointer to P4
-            p4_table[511].set(backup, PRESENT | WRITABLE);
+            p4_table[511].set(backup, EntryFlags::PRESENT | EntryFlags::WRITABLE);
             tlb::flush_all(); // prevent fuckiness
         }
 
@@ -120,7 +120,7 @@ impl InactivePageTable {
             table.zero();
 
             // set up a recursive mapping for this table
-            table[511].set(frame.clone(), PRESENT | WRITABLE);
+            table[511].set(frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
         }
         temporary_page.unmap(active_table);
 
@@ -250,13 +250,13 @@ where
 
         // -- Identity map the VGA console buffer (it's only one frame long)
         let vga_buffer_frame = Frame::containing_address(0xb8000);
-        mapper.identity_map(vga_buffer_frame, WRITABLE, allocator);
+        mapper.identity_map(vga_buffer_frame, EntryFlags::WRITABLE, allocator);
 
         // -- Identity map the multiboot info structure
         let multiboot_start = Frame::containing_address(boot_info.start_address());
         let multiboot_end = Frame::containing_address(boot_info.end_address() - 1);
         for frame in Frame::range_inclusive(multiboot_start, multiboot_end) {
-            mapper.identity_map(frame, PRESENT | WRITABLE, allocator);
+            mapper.identity_map(frame, EntryFlags::PRESENT | EntryFlags::WRITABLE, allocator);
         }
     });
 

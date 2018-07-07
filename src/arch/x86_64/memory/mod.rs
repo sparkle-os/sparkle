@@ -160,7 +160,7 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
 
     // TODO: map these pages lazily
     for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-        active_table.map(page, paging::WRITABLE, &mut frame_allocator);
+        active_table.map(page, paging::EntryFlags::WRITABLE, &mut frame_allocator);
     }
 
     unsafe {

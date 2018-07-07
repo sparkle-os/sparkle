@@ -1,5 +1,5 @@
 use arch::x86_64::memory::{Frame, FrameAllocator};
-use super::{ActivePageTable, Page, Table};
+use super::{ActivePageTable, Page, Table, EntryFlags};
 use super::table::Level1;
 use super::VirtualAddress;
 
@@ -22,13 +22,11 @@ impl TemporaryPage {
     /// Maps the temporary page to the given frame, using the active table.
     /// Returns the start address of the temporary page in VRAM.
     pub fn map(&mut self, frame: Frame, active_table: &mut ActivePageTable) -> VirtualAddress {
-        use super::entry::WRITABLE;
-
         assert!(
             active_table.page_to_frame(self.page).is_none(),
             "Temporary page is already mapped!"
         );
-        active_table.map_to(self.page, frame, WRITABLE, &mut self.allocator);
+        active_table.map_to(self.page, frame, EntryFlags::WRITABLE, &mut self.allocator);
 
         self.page.start_address()
     }

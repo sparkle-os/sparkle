@@ -36,8 +36,6 @@ impl Mapper {
 
     /// Translates a given virtual page to a physical frame.
     pub fn page_to_frame(&self, page: Page) -> Option<Frame> {
-        use super::entry::HUGE_PAGE;
-
         let p3 = self.p4().next_table(page.p4_index());
 
         let handle_huge_page = || {
@@ -46,7 +44,7 @@ impl Mapper {
 
                 // Is this a 1GiB page?
                 if let Some(start_frame) = p3_entry.pointed_frame() {
-                    if p3_entry.flags().contains(HUGE_PAGE) {
+                    if p3_entry.flags().contains(EntryFlags::HUGE_PAGE) {
                         // 1GiB pages must be 1GiB-aligned
                         assert!(
                             start_frame.index % (ENTRY_COUNT * ENTRY_COUNT) == 0,
@@ -65,7 +63,7 @@ impl Mapper {
 
                     // Is this a 2MiB page?
                     if let Some(start_frame) = p2_entry.pointed_frame() {
-                        if p2_entry.flags().contains(HUGE_PAGE) {
+                        if p2_entry.flags().contains(EntryFlags::HUGE_PAGE) {
                             // 2MiB pages must be 2MiB-aligned
                             assert!(
                                 start_frame.index % ENTRY_COUNT == 0,
@@ -103,7 +101,7 @@ impl Mapper {
             p1[page.p1_index()].is_unused(),
             "Attempting to map Page->Frame but a P1 entry for this Page already exists!"
         );
-        p1[page.p1_index()].set(frame, flags | PRESENT);
+        p1[page.p1_index()].set(frame, flags | EntryFlags::PRESENT);
     }
 
     /// Maps a virtual page to a physical frame, automatically picking the frame.
