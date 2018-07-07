@@ -5,7 +5,7 @@
 use spin::Mutex;
 use linked_list_allocator::Heap;
 use core::ptr::NonNull;
-use core::alloc::{GlobalAlloc, Alloc, AllocErr, Layout, Opaque};
+use alloc::allocator::{GlobalAlloc, Alloc, AllocErr, Layout};
 
 /// Base location of the kheap.
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
@@ -24,7 +24,7 @@ pub unsafe fn heap_init(start: usize, size: usize) {
 pub struct Allocator;
 
 unsafe impl<'a> Alloc for &'a Allocator {
-    unsafe fn alloc(&mut self, layout: Layout) -> Result<NonNull<Opaque>, AllocErr> {
+    unsafe fn alloc(&mut self, layout: Layout) -> Result<NonNull<u8>, AllocErr> {
         if let Some(ref mut heap) = *HEAP.lock() {
             heap.allocate_first_fit(layout)
         } else {
@@ -32,7 +32,7 @@ unsafe impl<'a> Alloc for &'a Allocator {
         }
     }
 
-    unsafe fn dealloc(&mut self, ptr: NonNull<Opaque>, layout: Layout) {
+    unsafe fn dealloc(&mut self, ptr: NonNull<u8>, layout: Layout) {
         if let Some(ref mut heap) = *HEAP.lock() {
             heap.deallocate(ptr, layout)
         } else {
@@ -42,15 +42,15 @@ unsafe impl<'a> Alloc for &'a Allocator {
 }
 
 unsafe impl GlobalAlloc for Allocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut Opaque {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         if let Some(ref mut heap) = *HEAP.lock() {
-            heap.allocate_first_fit(layout).ok().map_or(0 as *mut Opaque, |ptr| {ptr.as_ptr()})
+            heap.allocate_first_fit(layout).ok().map_or(0 as *mut u8, |ptr| {ptr.as_ptr()})
         } else {
             panic!("kheap: attempting alloc w/ uninitialized heap");
         }
     }
 
-    unsafe fn dealloc(&self, ptr: *mut Opaque, layout: Layout) {
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         if let Some(ref mut heap) = *HEAP.lock() {
             heap.deallocate(NonNull::new_unchecked(ptr), layout)
         } else {
