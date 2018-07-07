@@ -22,9 +22,8 @@ impl FrameAllocator for AreaFrameAllocator {
             };
 
             // Calculate the current area's last frame
-            let current_area_last_frame = {
-                Frame::containing_address(area.end_address() as usize - 1)
-            };
+            let current_area_last_frame =
+                { Frame::containing_address(area.end_address() as usize - 1) };
 
             // Check if the frame we're considering is OK; if it is, we'll return it,
             // if not, we'll update the frame we're looking at and try again.
@@ -82,7 +81,8 @@ impl AreaFrameAllocator {
     }
 
     fn next_area(&mut self) {
-        self.current_area = self.areas
+        self.current_area = self
+            .areas
             .clone()
             .filter(|area| {
                 Frame::containing_address(area.end_address() as usize - 1) >= self.next_free_frame

@@ -1,10 +1,10 @@
 //! Controls Sparkle's IDT.
 
+use spin::Once;
+use x86::structures::gdt::SegmentSelector;
 use x86::structures::idt::{ExceptionStackFrame, Idt};
 use x86::structures::tss::TaskStateSegment;
-use x86::structures::gdt::SegmentSelector;
 use x86::VirtAddr;
-use spin::Once;
 
 use arch::x86_64::memory::MemoryController;
 
@@ -20,7 +20,8 @@ lazy_static! {
 
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         unsafe {
-            idt.double_fault.set_handler_fn(double_fault_handler)
+            idt.double_fault
+                .set_handler_fn(double_fault_handler)
                 .set_stack_index(IST_DOUBLE_FAULT as u16);
         }
 
@@ -41,7 +42,8 @@ pub fn init(memory_controller: &mut MemoryController) {
 
     let tss = TSS.call_once(|| {
         let mut tss = TaskStateSegment::new();
-        tss.interrupt_stack_table[IST_DOUBLE_FAULT] = VirtAddr::new(double_fault_stack.top() as u64);
+        tss.interrupt_stack_table[IST_DOUBLE_FAULT] =
+            VirtAddr::new(double_fault_stack.top() as u64);
 
         tss
     });

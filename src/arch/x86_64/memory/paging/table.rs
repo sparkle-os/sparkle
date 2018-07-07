@@ -1,9 +1,9 @@
 //! Representation and operations on page tables.
 
-use core::ops::{Index, IndexMut};
-use core::marker::PhantomData;
+use super::{Entry, EntryFlags, ENTRY_COUNT};
 use arch::x86_64::memory::FrameAllocator;
-use super::{ENTRY_COUNT, Entry, EntryFlags};
+use core::marker::PhantomData;
+use core::ops::{Index, IndexMut};
 
 pub trait TableLevel {}
 pub enum Level4 {}
@@ -51,7 +51,8 @@ where
 {
     fn next_table_address(&self, index: usize) -> Option<usize> {
         let entry_flags = self[index].flags();
-        if entry_flags.contains(EntryFlags::PRESENT) && !entry_flags.contains(EntryFlags::HUGE_PAGE) {
+        if entry_flags.contains(EntryFlags::PRESENT) && !entry_flags.contains(EntryFlags::HUGE_PAGE)
+        {
             let table_address = self as *const _ as usize;
             Some((table_address << 9) | (index << 12))
         } else {

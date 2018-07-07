@@ -1,6 +1,6 @@
-use x86::instructions::port::Port;
 use core::fmt;
 use spin::RwLock;
+use x86::instructions::port::Port;
 
 lazy_static! {
     pub static ref COM1: RwLock<SerialPort> = RwLock::new(SerialPort::new(0x3f8));

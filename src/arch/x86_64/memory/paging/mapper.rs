@@ -1,9 +1,9 @@
 #![cfg_attr(feature = "cargo-clippy", allow(needless_return))]
-use core::ptr::Unique;
-use arch::x86_64::memory::{Frame, FrameAllocator, PAGE_SIZE};
 use super::entry::*;
-use super::{Page, PhysicalAddress, VirtualAddress, ENTRY_COUNT};
 use super::table::{self, Level4, Table};
+use super::{Page, PhysicalAddress, VirtualAddress, ENTRY_COUNT};
+use arch::x86_64::memory::{Frame, FrameAllocator, PAGE_SIZE};
+use core::ptr::Unique;
 
 /// Owns the top-level active page table (P4).
 pub struct Mapper {
@@ -52,7 +52,8 @@ impl Mapper {
                         );
 
                         return Some(Frame {
-                            index: start_frame.index + page.p2_index() * ENTRY_COUNT
+                            index: start_frame.index
+                                + page.p2_index() * ENTRY_COUNT
                                 + page.p1_index(),
                         });
                     }
@@ -135,7 +136,8 @@ impl Mapper {
             "Attempted to unmap a page which is not mapped!"
         );
 
-        let p1 = self.p4_mut()
+        let p1 = self
+            .p4_mut()
             .next_table_mut(page.p4_index())
             .and_then(|p3| p3.next_table_mut(page.p3_index()))
             .and_then(|p2| p2.next_table_mut(page.p2_index()))

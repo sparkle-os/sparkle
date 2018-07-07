@@ -2,10 +2,10 @@
 
 #![cfg_attr(feature="cargo-clippy", allow(inconsistent_digit_grouping))]
 
-use spin::Mutex;
-use linked_list_allocator::Heap;
+use alloc::allocator::{Alloc, AllocErr, GlobalAlloc, Layout};
 use core::ptr::NonNull;
-use alloc::allocator::{GlobalAlloc, Alloc, AllocErr, Layout};
+use linked_list_allocator::Heap;
+use spin::Mutex;
 
 /// Base location of the kheap.
 pub const HEAP_START: usize = 0o_000_001_000_000_0000;
@@ -44,7 +44,9 @@ unsafe impl<'a> Alloc for &'a Allocator {
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         if let Some(ref mut heap) = *HEAP.lock() {
-            heap.allocate_first_fit(layout).ok().map_or(0 as *mut u8, |ptr| {ptr.as_ptr()})
+            heap.allocate_first_fit(layout)
+                .ok()
+                .map_or(0 as *mut u8, |ptr| ptr.as_ptr())
         } else {
             panic!("kheap: attempting alloc w/ uninitialized heap");
         }

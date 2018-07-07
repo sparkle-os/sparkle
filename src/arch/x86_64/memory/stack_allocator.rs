@@ -1,4 +1,4 @@
-use memory::paging::{ActivePageTable, Page, PageIter, EntryFlags};
+use memory::paging::{ActivePageTable, EntryFlags, Page, PageIter};
 use memory::{FrameAllocator, PAGE_SIZE};
 
 #[derive(Debug)]

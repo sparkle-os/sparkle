@@ -7,7 +7,8 @@ use x86::instructions::port::Port;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
-        column_pos: 0, row_pos: 0,
+        column_pos: 0,
+        row_pos: 0,
         style: CharStyle::new(Color::Cyan, Color::DarkGray),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
@@ -213,7 +214,8 @@ pub struct StyledWriter<'a> {
 
 impl<'a> StyledWriter<'a> {
     pub fn set_style(mut self, style: CharStyle) -> Self {
-        self.style = style; self
+        self.style = style;
+        self
     }
 }
 

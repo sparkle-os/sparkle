@@ -5,20 +5,20 @@
 
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
-use core::ops::{Add, Deref, DerefMut};
-use multiboot2::BootInformation;
 use super::PAGE_SIZE;
 use super::{Frame, FrameAllocator};
+use core::ops::{Add, Deref, DerefMut};
+use multiboot2::BootInformation;
 
 mod entry;
-mod table;
 mod mapper;
+mod table;
 mod temporary_page;
 
 pub use self::entry::{Entry, EntryFlags};
+use self::mapper::Mapper;
 use self::table::Table;
 use self::temporary_page::TemporaryPage;
-use self::mapper::Mapper;
 
 /// Upper bound on entries per page table
 const ENTRY_COUNT: usize = 512;
@@ -67,7 +67,10 @@ impl ActivePageTable {
             let p4_table = scratch_page.map_table_frame(backup.clone(), self);
 
             // Overwrite main P4 recursive mapping
-            self.p4_mut()[511].set(table.p4_frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
+            self.p4_mut()[511].set(
+                table.p4_frame.clone(),
+                EntryFlags::PRESENT | EntryFlags::WRITABLE,
+            );
             tlb::flush_all(); // flush *all* TLBs to prevent fuckiness
 
             // Execute f in context of the new page table
@@ -87,8 +90,8 @@ impl ActivePageTable {
     /// the TLB when the P4 table is switched.
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
         use x86::registers::control::Cr3;
-        use x86::PhysAddr;
         use x86::structures::paging::PhysFrame;
+        use x86::PhysAddr;
 
         let old_table = InactivePageTable {
             p4_frame: Frame::containing_address(Cr3::read().0.start_address().as_u64() as usize),
@@ -96,7 +99,9 @@ impl ActivePageTable {
 
         unsafe {
             Cr3::write(
-                PhysFrame::from_start_address(PhysAddr::new(new_table.p4_frame.start_address() as u64)).unwrap(),
+                PhysFrame::from_start_address(PhysAddr::new(
+                    new_table.p4_frame.start_address() as u64
+                )).unwrap(),
                 Cr3::read().1,
             );
         }
@@ -240,7 +245,8 @@ where
             );
             debug!(
                 "Mapping section at addr: {:#x}, size: {:#x}",
-                section.start_address(), section.size()
+                section.start_address(),
+                section.size()
             );
 
             let flags = EntryFlags::from_elf_section_flags(&section);

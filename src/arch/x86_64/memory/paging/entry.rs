@@ -2,8 +2,8 @@
 
 #![cfg_attr(feature="cargo-clippy", allow(identity_op))]
 
-use multiboot2::ElfSection;
 use arch::x86_64::memory::Frame;
+use multiboot2::ElfSection;
 
 pub struct Entry(u64);
 

@@ -1,6 +1,6 @@
 use core::mem::size_of;
-use x86::structures::tss::TaskStateSegment;
 use x86::structures::gdt::SegmentSelector;
+use x86::structures::tss::TaskStateSegment;
 use x86::PrivilegeLevel;
 
 pub struct Gdt {
@@ -65,7 +65,10 @@ pub enum Descriptor {
 
 impl Descriptor {
     pub fn kernel_code_segment() -> Descriptor {
-        let flags = DescriptorFlags::USER_SEGMENT | DescriptorFlags::PRESENT | DescriptorFlags::EXECUTABLE | DescriptorFlags::LONG_MODE;
+        let flags = DescriptorFlags::USER_SEGMENT
+            | DescriptorFlags::PRESENT
+            | DescriptorFlags::EXECUTABLE
+            | DescriptorFlags::LONG_MODE;
 
         Descriptor::UserSegment(flags.bits())
     }

@@ -3,12 +3,12 @@
 //! Heavly inspired/lovingly ripped off from Phil Oppermann's [os.phil-opp.com](http://os.phil-opp.com/).
 
 mod area_frame_allocator;
-mod stack_allocator;
 mod paging;
+mod stack_allocator;
 
-use multiboot2::BootInformation;
-use arch::x86_64;
 use alloca;
+use arch::x86_64;
+use multiboot2::BootInformation;
 
 pub use self::area_frame_allocator::AreaFrameAllocator;
 use self::paging::{ActivePageTable, Page};
@@ -113,7 +113,11 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
 
     debug!("memory areas:");
     for area in memory_map_tag.memory_areas() {
-        debug!("  start: {:#x}, length: {:#x}", area.start_address(), area.size());
+        debug!(
+            "  start: {:#x}, length: {:#x}",
+            area.start_address(),
+            area.size()
+        );
     }
 
     let kernel_start = elf_sections_tag
