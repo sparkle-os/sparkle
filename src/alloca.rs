@@ -2,7 +2,7 @@
 
 #![cfg_attr(feature="cargo-clippy", allow(inconsistent_digit_grouping))]
 
-use alloc::allocator::{Alloc, AllocErr, GlobalAlloc, Layout};
+use alloc::alloc::{Alloc, AllocErr, GlobalAlloc, Layout};
 use core::ptr::NonNull;
 use linked_list_allocator::Heap;
 use spin::Mutex;
