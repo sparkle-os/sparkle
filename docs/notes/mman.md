@@ -6,6 +6,7 @@
 
 ## kernel heap allocator
 * note: is _not_ the userspace allocator! see [here](#splitting-kernel-and-userspace-alloc)
+* currently using [linked-list-allocator](https://github.com/phil-opp/linked-list-allocator)
 
 ## memory initialization on boot
 * recieve segment list from Multiboot info pointer given to us by GRUB
@@ -28,3 +29,4 @@
 # userspace
 ## splitting kernel and userspace alloc
 * userspace has its own alloc server.
+* we need some way of passing pages to that. probably capability-based.
