@@ -2,7 +2,7 @@
 
 use spin::Once;
 use x86::structures::gdt::SegmentSelector;
-use x86::structures::idt::{ExceptionStackFrame, Idt};
+use x86::structures::idt::{ExceptionStackFrame, InterruptDescriptorTable};
 use x86::structures::tss::TaskStateSegment;
 use x86::VirtAddr;
 
@@ -15,8 +15,8 @@ use self::gdt::Gdt;
 const IST_DOUBLE_FAULT: usize = 0;
 
 lazy_static! {
-    static ref IDT: Idt = {
-        let mut idt = Idt::new();
+    static ref IDT: InterruptDescriptorTable = {
+        let mut idt = InterruptDescriptorTable::new();
 
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         unsafe {
