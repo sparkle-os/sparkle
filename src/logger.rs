@@ -31,7 +31,7 @@ impl Log for KernelLogger {
             #[cfg(feature = "logging-serial")]
             {
                 use core::fmt::Write;
-                write!(COM1.write(), "[{}]: {}\n", record.level(), record.args()).unwrap();
+                writeln!(COM1.write(), "[{}]: {}", record.level(), record.args()).unwrap();
             }
             #[cfg(feature = "logging-console")]
             {
@@ -49,9 +49,9 @@ impl Log for KernelLogger {
                     },
                     Color::DarkGray,
                 );
-                let _ = write!(wtr.styled().set_style(sty), "{:>5}", record.level());
+                write!(wtr.styled().set_style(sty), "{:>5}", record.level()).unwrap();
 
-                let _ = writeln!(wtr, ": {}", record.args());
+                writeln!(wtr, ": {}", record.args()).unwrap();;
             }
         }
     }

@@ -14,10 +14,7 @@ impl Stack {
             "Stack top must be higher in memory than the bottom"
         );
 
-        Stack {
-            top: top,
-            bottom: bottom,
-        }
+        Stack { top, bottom }
     }
 
     pub fn top(&self) -> usize {

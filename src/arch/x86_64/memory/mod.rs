@@ -45,10 +45,7 @@ impl Frame {
 
     /// Returns an iterator of all the frames between `start` and `end` (inclusive).
     fn range_inclusive(start: Frame, end: Frame) -> FrameIter {
-        FrameIter {
-            start: start,
-            end: end,
-        }
+        FrameIter { start, end }
     }
 
     /// Clones the Frame; we implement this instead of deriving Clone since deriving clone
@@ -181,8 +178,8 @@ pub fn init(boot_info: &BootInformation) -> MemoryController {
     };
 
     MemoryController {
-        active_table: active_table,
-        frame_allocator: frame_allocator,
-        stack_allocator: stack_allocator,
+        active_table,
+        frame_allocator,
+        stack_allocator,
     }
 }

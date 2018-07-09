@@ -162,10 +162,7 @@ impl Page {
     }
 
     pub fn range_inclusive(start: Page, end: Page) -> PageIter {
-        PageIter {
-            start: start,
-            end: end,
-        }
+        PageIter { start, end }
     }
 
     fn p4_index(&self) -> usize {
