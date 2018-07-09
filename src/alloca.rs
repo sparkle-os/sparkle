@@ -3,7 +3,7 @@
 #![cfg_attr(feature="cargo-clippy", allow(inconsistent_digit_grouping))]
 
 use alloc::alloc::{Alloc, AllocErr, GlobalAlloc, Layout};
-use core::ptr::NonNull;
+use core::ptr::{self, NonNull};
 use linked_list_allocator::Heap;
 use spin::Mutex;
 
@@ -46,7 +46,7 @@ unsafe impl GlobalAlloc for Allocator {
         if let Some(ref mut heap) = *HEAP.lock() {
             heap.allocate_first_fit(layout)
                 .ok()
-                .map_or(0 as *mut u8, |ptr| ptr.as_ptr())
+                .map_or(ptr::null_mut(), |ptr| ptr.as_ptr())
         } else {
             panic!("kheap: attempting alloc w/ uninitialized heap");
         }
