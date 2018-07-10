@@ -1,6 +1,6 @@
 use core::fmt;
 use spin::RwLock;
-use x86::instructions::port::Port;
+use x86_64::instructions::port::Port;
 
 macro_rules! port {
     ($name:ident, $addr:expr) => {

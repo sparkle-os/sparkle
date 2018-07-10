@@ -1,7 +1,7 @@
 use core::mem::size_of;
-use x86::structures::gdt::SegmentSelector;
-use x86::structures::tss::TaskStateSegment;
-use x86::PrivilegeLevel;
+use x86_64::structures::gdt::SegmentSelector;
+use x86_64::structures::tss::TaskStateSegment;
+use x86_64::PrivilegeLevel;
 
 pub struct Gdt {
     table: [u64; 8],
@@ -31,7 +31,7 @@ impl Gdt {
     }
 
     pub fn load(&'static self) {
-        use x86::instructions::tables::{lgdt, DescriptorTablePointer};
+        use x86_64::instructions::tables::{lgdt, DescriptorTablePointer};
 
         let ptr = DescriptorTablePointer {
             base: self.table.as_ptr() as u64,

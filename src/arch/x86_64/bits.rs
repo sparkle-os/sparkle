@@ -1,6 +1,6 @@
 /// Turn on no-execute page protection.
 pub fn enable_nxe() {
-    use x86::registers::model_specific::{Efer, EferFlags};
+    use x86_64::registers::model_specific::{Efer, EferFlags};
 
     unsafe {
         Efer::update(|flags| *flags |= EferFlags::NO_EXECUTE_ENABLE);
@@ -9,7 +9,7 @@ pub fn enable_nxe() {
 
 /// Turn on page write-protect enforcement.
 pub fn enable_wrprot() {
-    use x86::registers::control::{Cr0, Cr0Flags};
+    use x86_64::registers::control::{Cr0, Cr0Flags};
     unsafe {
         Cr0::update(|flags| *flags |= Cr0Flags::WRITE_PROTECT);
     }

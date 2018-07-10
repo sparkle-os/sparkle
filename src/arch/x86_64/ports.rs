@@ -1,5 +1,5 @@
 use core::marker::PhantomData;
-use x86::instructions::port::*;
+use x86_64::instructions::port::*;
 
 /// Marker trait for types that can be used as an IO port value type.
 pub trait IoType {}

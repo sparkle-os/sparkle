@@ -1,5 +1,5 @@
-use memory::paging::{ActivePageTable, EntryFlags, Page, PageIter};
-use memory::{FrameAllocator, PAGE_SIZE};
+use memory::paging::{ActivePageTable, Page, Frame, PageIter, FrameAllocator};
+use memory::paging::table::EntryFlags;
 
 #[derive(Debug)]
 pub struct Stack {
@@ -73,8 +73,7 @@ impl StackAllocator {
                 }
 
                 // create a new stack
-
-                let top = end.start_address() + PAGE_SIZE;
+                let top = end.start_address() + Frame::SIZE;
 
                 Some(Stack::new(top, start.start_address()))
             }
