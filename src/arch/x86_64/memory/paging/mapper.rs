@@ -140,8 +140,8 @@ impl Mapper {
         let frame = p1[page.p1_index()].pointed_frame().unwrap();
         p1[page.p1_index()].set_unused();
 
-        use x86::instructions::tlb;
-        tlb::flush(::x86::VirtAddr::new(page.start_address() as u64));
+        use x86_64::instructions::tlb;
+        tlb::flush(::x86_64::VirtAddr::new(page.start_address() as u64));
 
         // TODO free p(1,2,3) table if empty
         // allocator.dealloc_frame(frame);

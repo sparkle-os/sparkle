@@ -1,10 +1,10 @@
 //! Controls Sparkle's IDT.
 
 use spin::Once;
-use x86::structures::gdt::SegmentSelector;
-use x86::structures::idt::{ExceptionStackFrame, InterruptDescriptorTable};
-use x86::structures::tss::TaskStateSegment;
-use x86::VirtAddr;
+use x86_64::structures::gdt::SegmentSelector;
+use x86_64::structures::idt::{ExceptionStackFrame, InterruptDescriptorTable};
+use x86_64::structures::tss::TaskStateSegment;
+use x86_64::VirtAddr;
 
 use arch::x86_64::memory::MemoryController;
 use arch::x86_64::memory::paging::FrameAllocator;
@@ -35,8 +35,8 @@ static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<Gdt> = Once::new();
 
 pub fn init<A: FrameAllocator>(memory_controller: &mut MemoryController<A>) {
-    use x86::instructions::segmentation::set_cs;
-    use x86::instructions::tables::load_tss;
+    use x86_64::instructions::segmentation::set_cs;
+    use x86_64::instructions::tables::load_tss;
 
     let double_fault_stack = memory_controller
         .alloc_stack(1)

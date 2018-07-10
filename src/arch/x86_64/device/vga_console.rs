@@ -3,7 +3,7 @@
 use core::fmt;
 use spin::Mutex;
 use volatile::Volatile;
-use x86::instructions::port::Port;
+use x86_64::instructions::port::Port;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {

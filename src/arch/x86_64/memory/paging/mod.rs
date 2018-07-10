@@ -58,8 +58,8 @@ impl ActivePageTable {
     where
         F: FnOnce(&mut Mapper),
     {
-        use x86::instructions::tlb;
-        use x86::registers::control::Cr3;
+        use x86_64::instructions::tlb;
+        use x86_64::registers::control::Cr3;
 
         {
             // Backup the original P4 pointer
@@ -91,9 +91,9 @@ impl ActivePageTable {
     /// Note: We don't need to flush the TLB here, as the CPU automatically flushes
     /// the TLB when the P4 table is switched.
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
-        use x86::registers::control::Cr3;
-        use x86::structures::paging::PhysFrame;
-        use x86::PhysAddr;
+        use x86_64::registers::control::Cr3;
+        use x86_64::structures::paging::PhysFrame;
+        use x86_64::PhysAddr;
 
         let old_table = InactivePageTable {
             p4_frame: Frame::containing_address(Cr3::read().0.start_address().as_u64() as usize),

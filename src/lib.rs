@@ -21,7 +21,7 @@ extern crate once;
 extern crate rlibc;
 extern crate spin;
 extern crate volatile;
-extern crate x86_64 as x86;
+extern crate x86_64;
 
 // sparkle-* libs
 
