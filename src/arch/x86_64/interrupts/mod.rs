@@ -6,9 +6,8 @@ use x86_64::structures::idt::{ExceptionStackFrame, InterruptDescriptorTable};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtAddr;
 
-use arch::x86_64::memory::MemoryController;
 use arch::x86_64::memory::paging::FrameAllocator;
-
+use arch::x86_64::memory::MemoryController;
 
 mod gdt;
 

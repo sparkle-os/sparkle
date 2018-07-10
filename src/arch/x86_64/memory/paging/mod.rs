@@ -8,22 +8,22 @@
 use core::ops::{Deref, DerefMut};
 use multiboot2::BootInformation;
 
-mod mapper;
-pub mod table;
 mod frame;
-mod page;
-mod temporary_page;
 pub mod frame_allocators;
+mod mapper;
+mod page;
+pub mod table;
+mod temporary_page;
 
 pub use self::frame::Frame;
-pub use self::page::{Page, PageIter};
 pub use self::frame_allocators::FrameAllocator;
 use self::mapper::Mapper;
-use self::table::{Table, EntryFlags};
+pub use self::page::{Page, PageIter};
+use self::table::{EntryFlags, Table};
 use self::temporary_page::TemporaryPage;
 
 /// Helper type aliases used to make function signatures more expressive
-/// 
+///
 /// # TODO
 /// Replace these with the equivalent newtypes from the `x86_64` crate.
 pub type PhysicalAddress = usize;

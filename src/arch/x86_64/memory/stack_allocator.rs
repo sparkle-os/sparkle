@@ -1,5 +1,5 @@
-use memory::paging::{ActivePageTable, Page, Frame, PageIter, FrameAllocator};
 use memory::paging::table::EntryFlags;
+use memory::paging::{ActivePageTable, Frame, FrameAllocator, Page, PageIter};
 
 #[derive(Debug)]
 pub struct Stack {

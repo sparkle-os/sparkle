@@ -9,8 +9,8 @@ use alloca;
 use arch::x86_64;
 use multiboot2::BootInformation;
 
-use self::paging::{ActivePageTable, Frame, Page, FrameAllocator, table};
 use self::paging::frame_allocators::AreaFrameAllocator;
+use self::paging::{table, ActivePageTable, Frame, FrameAllocator, Page};
 
 pub use self::stack_allocator::{Stack, StackAllocator};
 
@@ -23,7 +23,10 @@ where
     stack_allocator: StackAllocator,
 }
 
-impl<A> MemoryController<A> where A: FrameAllocator {
+impl<A> MemoryController<A>
+where
+    A: FrameAllocator,
+{
     /// Allocates and returns a stack.
     ///
     /// Note: `size` is given in pages.

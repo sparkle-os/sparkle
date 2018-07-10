@@ -1,5 +1,5 @@
+use super::{Frame, VirtualAddress};
 use core::ops::Add;
-use super::{VirtualAddress, Frame};
 
 /// A representation of a virtual page.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]

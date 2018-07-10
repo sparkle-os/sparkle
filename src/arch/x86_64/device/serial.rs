@@ -4,8 +4,10 @@ use x86_64::instructions::port::Port;
 
 macro_rules! port {
     ($name:ident, $addr:expr) => {
-        lazy_static! { pub static ref $name: RwLock<SerialPort> = RwLock::new(SerialPort::new($addr)); }
-    }
+        lazy_static! {
+            pub static ref $name: RwLock<SerialPort> = RwLock::new(SerialPort::new($addr));
+        }
+    };
 }
 
 port!(COM1, 0x3f8);

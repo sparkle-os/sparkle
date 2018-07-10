@@ -1,6 +1,14 @@
 #![feature(
-    asm, ptr_internals, const_fn, lang_items, const_unique_new, alloc, allocator_api,
-    abi_x86_interrupt, panic_implementation, panic_info_message
+    asm,
+    ptr_internals,
+    const_fn,
+    lang_items,
+    const_unique_new,
+    alloc,
+    allocator_api,
+    abi_x86_interrupt,
+    panic_implementation,
+    panic_info_message
 )]
 #![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(large_digit_groups))]

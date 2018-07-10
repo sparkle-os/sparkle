@@ -1,7 +1,7 @@
 //! Physical page frames.
 
 /// A page frame in physical memory.
-/// 
+///
 /// # Limitations
 /// Currently, page frames are all the same size (4kib) and represented internally with an index,
 /// starting with frame 0 at physical memory location `0x0`.

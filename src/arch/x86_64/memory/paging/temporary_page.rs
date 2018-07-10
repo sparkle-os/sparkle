@@ -1,5 +1,5 @@
-use super::{VirtualAddress, ActivePageTable, Page, Table};
-use super::table::{Level1, EntryFlags};
+use super::table::{EntryFlags, Level1};
+use super::{ActivePageTable, Page, Table, VirtualAddress};
 use arch::x86_64::memory::{Frame, FrameAllocator};
 
 pub struct TemporaryPage {
