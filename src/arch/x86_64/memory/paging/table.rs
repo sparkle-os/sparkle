@@ -1,9 +1,9 @@
 //! Representation and operations on page tables.
 
-use super::{Entry, EntryFlags, ENTRY_COUNT};
-use arch::x86_64::memory::FrameAllocator;
+use super::{Frame, FrameAllocator};
 use core::marker::PhantomData;
 use core::ops::{Index, IndexMut};
+use multiboot2::ElfSection;
 
 pub trait TableLevel {}
 pub enum Level4 {}
@@ -28,6 +28,9 @@ impl HierarchicalLevel for Level2 {
 }
 
 pub const P4: *mut Table<Level4> = 0xffffffff_fffff000 as *mut _;
+
+/// Upper bound on entries per page table
+pub const ENTRY_COUNT: usize = 512;
 
 pub struct Table<L: TableLevel> {
     entries: [Entry; ENTRY_COUNT],
@@ -111,5 +114,77 @@ where
 {
     fn index_mut(&mut self, index: usize) -> &mut Entry {
         &mut self.entries[index]
+    }
+}
+
+/// A page table entry.
+pub struct Entry(u64);
+
+impl Entry {
+    pub fn is_unused(&self) -> bool {
+        self.0 == 0
+    }
+
+    pub fn set_unused(&mut self) {
+        self.0 = 0;
+    }
+
+    pub fn flags(&self) -> EntryFlags {
+        EntryFlags::from_bits_truncate(self.0)
+    }
+
+    pub fn pointed_frame(&self) -> Option<Frame> {
+        if self.flags().contains(EntryFlags::PRESENT) {
+            Some(Frame::containing_address(
+                self.0 as usize & 0x000fffff_fffff000,
+            ))
+        } else {
+            None
+        }
+    }
+
+    pub fn set(&mut self, frame: Frame, flags: EntryFlags) {
+        // Frame physical address must be page-aligned and smaller than 2^52
+        assert!(
+            frame.start_address() & !0x000fffff_fffff000 == 0,
+            "Frame physical addresses must be page-aligned and smaller than 2^52!"
+        );
+
+        self.0 = (frame.start_address() as u64) | flags.bits();
+    }
+}
+
+bitflags! {
+    pub struct EntryFlags: u64 {
+        const PRESENT =         1 << 0;
+        const WRITABLE =        1 << 1;
+        const USER_ACCESSIBLE = 1 << 2;
+        const WRITE_THROUGH =   1 << 3;
+        const NO_CACHE =        1 << 4;
+        const ACCESSED =        1 << 5;
+        const DIRTY =           1 << 6;
+        const HUGE_PAGE =       1 << 7;
+        const GLOBAL =          1 << 8;
+        const NO_EXECUTE =      1 << 63;
+    }
+}
+
+impl EntryFlags {
+    pub fn from_elf_section_flags(section: &ElfSection) -> EntryFlags {
+        use multiboot2::ElfSectionFlags;
+
+        let mut flags = EntryFlags::empty();
+
+        if section.flags().contains(ElfSectionFlags::ALLOCATED) {
+            flags |= EntryFlags::PRESENT;
+        }
+        if section.flags().contains(ElfSectionFlags::WRITABLE) {
+            flags |= EntryFlags::WRITABLE;
+        }
+        if !section.flags().contains(ElfSectionFlags::EXECUTABLE) {
+            flags |= EntryFlags::NO_EXECUTE;
+        }
+
+        flags
     }
 }

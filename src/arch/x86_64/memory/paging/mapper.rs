@@ -1,8 +1,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(needless_return))]
-use super::entry::*;
-use super::table::{self, Level4, Table};
-use super::{Page, PhysicalAddress, VirtualAddress, ENTRY_COUNT};
-use arch::x86_64::memory::{Frame, FrameAllocator, PAGE_SIZE};
+use super::table::{self, EntryFlags, Level4, Table, ENTRY_COUNT};
+use super::{Frame, Page, PhysicalAddress, VirtualAddress};
+use arch::x86_64::memory::FrameAllocator;
 use core::ptr::Unique;
 
 /// Owns the top-level active page table (P4).
@@ -29,9 +28,9 @@ impl Mapper {
 
     /// Translates a given virtual address to a physical address.
     pub fn translate(&self, virtual_address: VirtualAddress) -> Option<PhysicalAddress> {
-        let offset = virtual_address % PAGE_SIZE; // offset into the frame
+        let offset = virtual_address % Frame::SIZE; // offset into the frame
         self.page_to_frame(Page::containing_address(virtual_address))
-            .map(|frame| frame.index * PAGE_SIZE + offset)
+            .map(|frame| frame.index() * Frame::SIZE + offset)
     }
 
     /// Translates a given virtual page to a physical frame.
@@ -47,15 +46,13 @@ impl Mapper {
                     if p3_entry.flags().contains(EntryFlags::HUGE_PAGE) {
                         // 1GiB pages must be 1GiB-aligned
                         assert!(
-                            start_frame.index % (ENTRY_COUNT * ENTRY_COUNT) == 0,
+                            start_frame.index() % (ENTRY_COUNT * ENTRY_COUNT) == 0,
                             "1GiB hugepages must be 1GiB-aligned"
                         );
 
-                        return Some(Frame {
-                            index: start_frame.index
-                                + page.p2_index() * ENTRY_COUNT
-                                + page.p1_index(),
-                        });
+                        return Some(Frame::new(
+                            start_frame.index() + page.p2_index() * ENTRY_COUNT + page.p1_index(),
+                        ));
                     }
                 }
 
@@ -67,13 +64,11 @@ impl Mapper {
                         if p2_entry.flags().contains(EntryFlags::HUGE_PAGE) {
                             // 2MiB pages must be 2MiB-aligned
                             assert!(
-                                start_frame.index % ENTRY_COUNT == 0,
+                                start_frame.index() % ENTRY_COUNT == 0,
                                 "2MiB pages must be 2MiB-aligned"
                             );
 
-                            return Some(Frame {
-                                index: start_frame.index + page.p1_index(),
-                            });
+                            return Some(Frame::new(start_frame.index() + page.p1_index()));
                         }
                     }
                 }

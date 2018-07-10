@@ -1,29 +1,31 @@
 //! Paging subsystem. *Note: uses recursive mapping.*
 //!
-//! Extremely ripped off from Phil Oppermann's tutorials, because I don't feel like writing
-//! a paging system off the top of my head today.
+//! Was extremely ripped off from Phil Oppermann's tutorials, because I didn't feel like writing
+//! a paging system off the top of my head. Nowadays, it's a bit more _mine_.
 
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
-use super::PAGE_SIZE;
-use super::{Frame, FrameAllocator};
-use core::ops::{Add, Deref, DerefMut};
+use core::ops::{Deref, DerefMut};
 use multiboot2::BootInformation;
 
-mod entry;
 mod mapper;
-mod table;
+pub mod table;
+mod frame;
+mod page;
 mod temporary_page;
+pub mod frame_allocators;
 
-pub use self::entry::{Entry, EntryFlags};
+pub use self::frame::Frame;
+pub use self::page::{Page, PageIter};
+pub use self::frame_allocators::FrameAllocator;
 use self::mapper::Mapper;
-use self::table::Table;
+use self::table::{Table, EntryFlags};
 use self::temporary_page::TemporaryPage;
 
-/// Upper bound on entries per page table
-const ENTRY_COUNT: usize = 512;
-
 /// Helper type aliases used to make function signatures more expressive
+/// 
+/// # TODO
+/// Replace these with the equivalent newtypes from the `x86_64` crate.
 pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
@@ -136,85 +138,12 @@ impl InactivePageTable {
     }
 }
 
-/// A representation of a virtual page.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Page {
-    index: usize,
-}
-
-impl Page {
-    /// Retrieves the page containing a given virtual address.
-    pub fn containing_address(address: VirtualAddress) -> Page {
-        assert!(
-            address < 0x0000_8000_0000_0000 || address >= 0xffff_8000_0000_0000,
-            "invalid address: {:#x}",
-            address
-        );
-
-        Page {
-            index: address / PAGE_SIZE,
-        }
-    }
-
-    /// Returns the start (virtual) address of a page
-    pub fn start_address(&self) -> VirtualAddress {
-        self.index * PAGE_SIZE
-    }
-
-    pub fn range_inclusive(start: Page, end: Page) -> PageIter {
-        PageIter { start, end }
-    }
-
-    fn p4_index(&self) -> usize {
-        (self.index >> 27) & 0o777
-    }
-    fn p3_index(&self) -> usize {
-        (self.index >> 18) & 0o777
-    }
-    fn p2_index(&self) -> usize {
-        (self.index >> 9) & 0o777
-    }
-    fn p1_index(&self) -> usize {
-        (self.index >> 0) & 0o777
-    }
-}
-
-impl Add<usize> for Page {
-    type Output = Page;
-
-    fn add(self, rhs: usize) -> Page {
-        Page {
-            index: self.index + rhs,
-        }
-    }
-}
-
-#[derive(Clone)]
-pub struct PageIter {
-    start: Page,
-    end: Page,
-}
-
-impl Iterator for PageIter {
-    type Item = Page;
-
-    fn next(&mut self) -> Option<Page> {
-        if self.start <= self.end {
-            let frame = self.start.clone();
-            self.start.index += 1;
-            Some(frame)
-        } else {
-            None
-        }
-    }
-}
-
 /// Remap the kernel
 pub fn remap_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> ActivePageTable
 where
     A: FrameAllocator,
 {
-    let mut scratch_page = TemporaryPage::new(Page { index: 0xabadcafe }, allocator);
+    let mut scratch_page = TemporaryPage::new(Page::new(0xabadcafe), allocator);
 
     let mut active_table = unsafe { ActivePageTable::new() };
     let mut new_table = {
@@ -237,7 +166,7 @@ where
             }
 
             assert!(
-                section.start_address() as usize % PAGE_SIZE == 0,
+                section.start_address() as usize % Frame::SIZE == 0,
                 "ELF sections must be page-aligned!"
             );
             debug!(

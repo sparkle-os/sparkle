@@ -7,6 +7,8 @@ use x86::structures::tss::TaskStateSegment;
 use x86::VirtAddr;
 
 use arch::x86_64::memory::MemoryController;
+use arch::x86_64::memory::paging::FrameAllocator;
+
 
 mod gdt;
 
@@ -32,7 +34,7 @@ lazy_static! {
 static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<Gdt> = Once::new();
 
-pub fn init(memory_controller: &mut MemoryController) {
+pub fn init<A: FrameAllocator>(memory_controller: &mut MemoryController<A>) {
     use x86::instructions::segmentation::set_cs;
     use x86::instructions::tables::load_tss;
 

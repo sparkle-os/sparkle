@@ -1,5 +1,12 @@
-use arch::x86_64::memory::{Frame, FrameAllocator};
+use super::Frame;
 use multiboot2::{MemoryArea, MemoryAreaIter};
+
+/// A trait which can be implemented by any frame allocator, to make the frame allocation system
+/// pluggable.
+pub trait FrameAllocator {
+    fn alloc_frame(&mut self) -> Option<Frame>;
+    fn dealloc_frame(&mut self, frame: Frame);
+}
 
 pub struct AreaFrameAllocator {
     next_free_frame: Frame,
@@ -17,9 +24,7 @@ impl FrameAllocator for AreaFrameAllocator {
     fn alloc_frame(&mut self) -> Option<Frame> {
         if let Some(area) = self.current_area {
             // This is the next frame up for allocation
-            let frame = Frame {
-                index: self.next_free_frame.index,
-            };
+            let frame = self.next_free_frame.clone();
 
             // Calculate the current area's last frame
             let current_area_last_frame =
@@ -41,7 +46,7 @@ impl FrameAllocator for AreaFrameAllocator {
                 self.next_free_frame = self.multiboot_end.next_frame();
             } else {
                 // Frame is unused!
-                self.next_free_frame.index += 1; // We'll consider the next frame next time we need to alloc
+                self.next_free_frame = Frame::new(self.next_free_frame.index() + 1); // We'll consider the next frame next time we need to alloc
                 return Some(frame);
             }
             // The frame we were looking at wasn't valid; try again with our updated `next_free_frame`
