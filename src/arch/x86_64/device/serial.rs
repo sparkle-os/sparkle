@@ -2,9 +2,13 @@ use core::fmt;
 use spin::RwLock;
 use x86::instructions::port::Port;
 
-lazy_static! {
-    pub static ref COM1: RwLock<SerialPort> = RwLock::new(SerialPort::new(0x3f8));
+macro_rules! port {
+    ($name:ident, $addr:expr) => {
+        lazy_static! { pub static ref $name: RwLock<SerialPort> = RwLock::new(SerialPort::new($addr)); }
+    }
 }
+
+port!(COM1, 0x3f8);
 
 pub struct SerialPort {
     data_port: Port<u8>,
