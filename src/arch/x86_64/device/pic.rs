@@ -1,3 +1,5 @@
+//! Driver for the Programmable Interrupt Controller (Intel 8259A).
+
 use x86_64::instructions::port::Port;
 
 // using the terminology from Intel's 1988 datasheet,

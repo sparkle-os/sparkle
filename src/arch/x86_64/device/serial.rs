@@ -1,3 +1,4 @@
+//! Serial port driver.
 use core::fmt;
 use spin::RwLock;
 use x86_64::instructions::port::Port;
