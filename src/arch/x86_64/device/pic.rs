@@ -29,7 +29,7 @@ pub unsafe fn init() {
     MASTER.data.write(1 << 2); // the IRQ 2 line is used for cascading
     SLAVE.data.write(2); // the slave has an ID of 2
 
-    // ICW4: put the PICs into 8086 mode
+    // ICW4: put the PICs into 8086 mode (EOIs are required)
     MASTER.data.write(PIC_ICW4_MODE_8086);
     SLAVE.data.write(PIC_ICW4_MODE_8086);
 
