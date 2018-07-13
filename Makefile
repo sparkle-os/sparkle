@@ -8,7 +8,7 @@ asm_src := $(wildcard src/arch/$(arch)/bload/*.asm)
 asm_obj := $(patsubst src/arch/$(arch)/bload/%.asm, build/$(arch)/bload/%.o, $(asm_src))
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
-qemu_flags := -serial mon:stdio
+qemu_flags := -serial mon:stdio -monitor vc
 
 .PHONY: all clean run iso doc
 
