@@ -11,8 +11,8 @@ long_start:
 	mov fs, ax
 	mov gs, ax
 
-	extern kernel_main
-	call kernel_main
+	extern _start
+	call _start
 
 	; print `EXIT` to screen
 	mov rax, 0x2f542f492f582f45

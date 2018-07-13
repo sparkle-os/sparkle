@@ -36,14 +36,11 @@ extern crate x86_64;
 #[macro_use]
 pub mod macros;
 mod alloca;
-mod arch;
+pub mod arch;
 mod logger;
 mod misc;
 
 use alloca::Allocator;
-use arch::x86_64::device::{pic, serial, vga_console};
-use arch::x86_64::interrupts;
-use arch::x86_64::memory;
 use core::panic::PanicInfo;
 
 /// Our globally-visible allocator. Plugs into whatever allocator we set up in [`alloca`].
@@ -52,29 +49,10 @@ use core::panic::PanicInfo;
 #[global_allocator]
 static GLOBAL_ALLOC: Allocator = Allocator {};
 
-/// Kernel main function. Called by the bootstrapping assembly stub.
-#[no_mangle]
-pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
-    vga_console::WRITER.lock().clear_screen();
-    println!("--- Sparkle v{} booting! ---", ::misc::VERSION);
-
-    logger::init().expect("Logger failed to launch!");
-
-    let boot_info = unsafe { multiboot2::load(multiboot_info_pointer) };
-
-    // initialize paging, remap kernel
-    let mut mem_ctrl = memory::init(&boot_info);
-    info!("memory::init() success!");
-
-    // initialize idt
-    interrupts::init(&mut mem_ctrl);
-    info!("int: initialized idt");
-
-    unsafe {
-        pic::init();
-    }
-    info!("int: initialized pic");
-
+/// Kernel main function. Called by the architecture-specific entry point,
+/// after initialization is finished.
+pub fn kernel_main() -> ! {
+    info!("arch-init: done, entering kernel_main");
     // spin
     unsafe {
         loop {
@@ -94,6 +72,7 @@ pub extern "C" fn eh_personality() {}
 pub extern "C" fn panic(info: &PanicInfo) -> ! {
     #[cfg(feature = "panic-console")]
     {
+        use arch::x86_64::device::vga_console;
         vga_console::WRITER
             .lock()
             .set_style(vga_console::CharStyle::new(
@@ -120,6 +99,7 @@ pub extern "C" fn panic(info: &PanicInfo) -> ! {
 
     #[cfg(feature = "panic-serial")]
     {
+        use arch::x86_64::device::serial;
         use core::fmt::Write;
         let mut port = serial::COM1.write();
 
