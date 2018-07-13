@@ -5,7 +5,7 @@ pub mod device;
 pub mod interrupts;
 pub mod memory;
 
-use self::device::{pic, vga_console};
+use self::device::{pic, pit, vga_console};
 use logger;
 use multiboot2;
 
@@ -29,6 +29,9 @@ pub unsafe extern "C" fn _start(multiboot_info_pointer: usize) -> ! {
 
     pic::init();
     info!("int: initialized pic");
+
+    pit::init();
+    info!("int: initialized pit");
 
     ::kernel_main();
 }

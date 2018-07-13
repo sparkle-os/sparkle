@@ -53,6 +53,7 @@ static GLOBAL_ALLOC: Allocator = Allocator {};
 /// after initialization is finished.
 pub fn kernel_main() -> ! {
     info!("arch-init: done, entering kernel_main");
+
     // spin
     unsafe {
         loop {
