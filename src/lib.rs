@@ -41,7 +41,7 @@ mod logger;
 mod misc;
 
 use alloca::Allocator;
-use arch::x86_64::device::{serial, vga_console};
+use arch::x86_64::device::{pic, serial, vga_console};
 use arch::x86_64::interrupts;
 use arch::x86_64::memory;
 use core::panic::PanicInfo;
@@ -69,6 +69,11 @@ pub extern "C" fn kernel_main(multiboot_info_pointer: usize) {
     // initialize idt
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
+
+    unsafe {
+        pic::init();
+    }
+    info!("int: initialized pic");
 
     // spin
     unsafe {
