@@ -4,8 +4,8 @@ use x86_64::instructions::port::Port;
 
 // using the terminology from Intel's 1988 datasheet,
 // "8259A PROGRAMMABLE INTERRUPT CONTROLLER".
-const MASTER: Pic = Pic::new(0x20);
-const SLAVE: Pic = Pic::new(0xA0);
+pub const MASTER: Pic = Pic::new(0x20);
+pub const SLAVE: Pic = Pic::new(0xA0);
 
 // command constants to send
 const PIC_OCW2_EOI: u8 = 0x20;
