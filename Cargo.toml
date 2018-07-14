@@ -14,7 +14,7 @@ x86_64 = "0.2"
 multiboot2 = "0.7"
 bitflags = "1.0"
 linked_list_allocator = "0.6"
-raw-cpuid = "4.0"
+raw-cpuid = "5.0"
 bit_field = "0.9"
 
 [dependencies.log]
