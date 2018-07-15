@@ -13,7 +13,7 @@ use multiboot2;
 #[no_mangle]
 pub unsafe extern "C" fn _start(multiboot_info_pointer: usize) -> ! {
     vga_console::WRITER.lock().clear_screen();
-    println!("--- Sparkle v{} booting! ---", ::misc::VERSION);
+    println!("--- Sparkle v{} booting! ---", ::consts::VERSION);
 
     logger::init().expect("Logger failed to launch!");
 

@@ -38,7 +38,7 @@ pub mod macros;
 pub mod alloca;
 pub mod arch;
 mod logger;
-mod misc;
+mod consts;
 
 use alloca::Allocator;
 use core::panic::PanicInfo;

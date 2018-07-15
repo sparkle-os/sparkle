@@ -18,12 +18,12 @@ pub fn init() -> Result<(), SetLoggerError> {
 struct KernelLogger;
 impl KernelLogger {
     fn filter(&self) -> LevelFilter {
-        ::misc::LOG_LEVEL.to_level_filter()
+        ::consts::LOG_LEVEL.to_level_filter()
     }
 }
 impl Log for KernelLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= ::misc::LOG_LEVEL
+        metadata.level() <= ::consts::LOG_LEVEL
     }
 
     fn log(&self, record: &Record) {
