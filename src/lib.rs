@@ -35,7 +35,7 @@ extern crate x86_64;
 
 #[macro_use]
 pub mod macros;
-mod alloca;
+pub mod alloca;
 pub mod arch;
 mod logger;
 mod misc;
@@ -137,11 +137,4 @@ pub extern "C" fn _Unwind_Resume() -> ! {
             arch::x86_64::halt();
         }
     };
-}
-
-/// OOM message
-#[lang = "oom"]
-#[no_mangle]
-pub extern "C" fn oom() -> ! {
-    panic!("kheap: allocation failed (OOM)");
 }

@@ -60,3 +60,10 @@ unsafe impl GlobalAlloc for Allocator {
         }
     }
 }
+
+/// OOM message
+#[lang = "oom"]
+#[no_mangle]
+pub extern "C" fn oom() -> ! {
+    panic!("kheap: allocation failed (OOM)");
+}
