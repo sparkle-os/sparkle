@@ -37,11 +37,11 @@ extern crate x86_64;
 pub mod macros;
 pub mod alloca;
 pub mod arch;
+pub mod panic;
 mod logger;
 mod consts;
 
 use alloca::Allocator;
-use core::panic::PanicInfo;
 
 /// Our globally-visible allocator. Plugs into whatever allocator we set up in [`alloca`].
 //
@@ -66,67 +66,6 @@ pub fn kernel_main() -> ! {
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern "C" fn eh_personality() {}
-
-/// Dumps panics to the console.
-#[panic_implementation]
-#[no_mangle]
-pub extern "C" fn panic(info: &PanicInfo) -> ! {
-    #[cfg(feature = "panic-console")]
-    {
-        use arch::x86_64::device::vga_console;
-        vga_console::WRITER
-            .lock()
-            .set_style(vga_console::CharStyle::new(
-                vga_console::Color::Black,
-                vga_console::Color::Red,
-            ));
-        println!();
-
-        if let Some(location) = info.location() {
-            println!(
-                "!!! PANIC in {} {}:{} !!!",
-                location.file(),
-                location.line(),
-                location.column()
-            );
-        } else {
-            println!("!!! PANIC at unknown location !!!");
-        }
-
-        if let Some(message) = info.message() {
-            println!("  {}", message);
-        }
-    }
-
-    #[cfg(feature = "panic-serial")]
-    {
-        use arch::x86_64::device::serial;
-        use core::fmt::Write;
-        let mut port = serial::COM1.write();
-
-        if let Some(location) = info.location() {
-            let _ = writeln!(
-                port,
-                "!!! PANIC in {} {}:{} !!!",
-                location.file(),
-                location.line(),
-                location.column()
-            );
-        } else {
-            let _ = writeln!(port, "!!! PANIC at unknown location !!!");
-        }
-
-        if let Some(message) = info.message() {
-            let _ = writeln!(port, "  {}", message);
-        }
-    }
-
-    unsafe {
-        loop {
-            arch::x86_64::halt();
-        }
-    };
-}
 
 /// Stack unwinding. Don't care, just halt.
 #[allow(non_snake_case)]
