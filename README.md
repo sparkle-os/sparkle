@@ -2,6 +2,8 @@
 
 # ✨sparkle✨
 
+![a screenshot of the Sparkle boot screen](docs/sparkle.png)
+
 ## building
 system prereqs/deps:
 * qemu
