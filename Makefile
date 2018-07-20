@@ -18,7 +18,7 @@ clean:
 	rm -r build/ target/
 
 check:
-	RUST_TARGET_PATH=$(shell pwd) xargo check --target $(rs_target)
+	cargo check
 
 run: $(iso)
 	qemu-system-x86_64 $(qemu_flags) -cdrom $(iso) -s
@@ -41,9 +41,9 @@ $(iso): $(kernel)
 $(kernel): $(asm_obj) $(rs_kernel)
 	ld -n --gc-sections -T $(linker_script) -o $(kernel) $^
 
-.PHONY: $(rs_kernel) # always run xargo
+.PHONY: $(rs_kernel) # always run this dep
 $(rs_kernel):
-	RUST_TARGET_PATH=$(shell pwd) xargo build --target $(rs_target)
+	cargo xbuild --target $(rs_target)
 
 build/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
