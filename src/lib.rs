@@ -3,7 +3,6 @@
     ptr_internals,
     const_fn,
     lang_items,
-    const_unique_new,
     alloc,
     allocator_api,
     abi_x86_interrupt,
