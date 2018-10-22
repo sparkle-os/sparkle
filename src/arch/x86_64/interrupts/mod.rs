@@ -8,6 +8,9 @@ use x86_64::VirtAddr;
 
 use arch::x86_64::memory::paging::FrameAllocator;
 use arch::x86_64::memory::MemoryController;
+use arch::x86_64::device::pic::PICS;
+
+pub use x86_64::instructions::interrupts::without_interrupts;
 
 mod gdt;
 
@@ -25,6 +28,8 @@ lazy_static! {
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(IST_DOUBLE_FAULT as u16);
         }
+
+        idt[32].set_handler_fn(timer_handler);
 
         idt
     };
@@ -81,4 +86,8 @@ extern "x86-interrupt" fn double_fault_handler(
 
     #[cfg_attr(feature = "cargo-clippy", allow(empty_loop))]
     loop {}
+}
+
+extern "x86-interrupt" fn timer_handler(_stack_frame: &mut ExceptionStackFrame) {
+    unsafe { PICS.lock().eoi(32); }
 }
