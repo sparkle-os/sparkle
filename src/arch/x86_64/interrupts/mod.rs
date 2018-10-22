@@ -6,9 +6,9 @@ use x86_64::structures::idt::{ExceptionStackFrame, InterruptDescriptorTable};
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtAddr;
 
+use arch::x86_64::device::pic::PICS;
 use arch::x86_64::memory::paging::FrameAllocator;
 use arch::x86_64::memory::MemoryController;
-use arch::x86_64::device::pic::PICS;
 
 pub use x86_64::instructions::interrupts::without_interrupts;
 
@@ -92,5 +92,7 @@ extern "x86-interrupt" fn double_fault_handler(
 }
 
 extern "x86-interrupt" fn timer_handler(_stack_frame: &mut ExceptionStackFrame) {
-    unsafe { PICS.write().eoi(INT_TIMER_PIT as u8); }
+    unsafe {
+        PICS.write().eoi(INT_TIMER_PIT as u8);
+    }
 }

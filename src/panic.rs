@@ -9,7 +9,7 @@ pub extern "C" fn panic(info: &PanicInfo) -> ! {
 
     #[cfg(feature = "panic-console")]
     {
-        use ::arch::x86_64::device::vga_console;
+        use arch::x86_64::device::vga_console;
         vga_console::WRITER
             .lock()
             .set_style(vga_console::CharStyle::new(
@@ -36,7 +36,7 @@ pub extern "C" fn panic(info: &PanicInfo) -> ! {
 
     #[cfg(feature = "panic-serial")]
     {
-        use ::arch::x86_64::device::serial;
+        use arch::x86_64::device::serial;
         use core::fmt::Write;
         let mut port = serial::COM1.write();
 

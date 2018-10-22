@@ -36,9 +36,9 @@ extern crate x86_64;
 pub mod macros;
 pub mod alloca;
 pub mod arch;
-pub mod panic;
-mod logger;
 mod consts;
+mod logger;
+pub mod panic;
 
 use alloca::Allocator;
 

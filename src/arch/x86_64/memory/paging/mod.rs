@@ -103,7 +103,8 @@ impl ActivePageTable {
             Cr3::write(
                 PhysFrame::from_start_address(PhysAddr::new(
                     new_table.p4_frame.start_address() as u64
-                )).unwrap(),
+                ))
+                .unwrap(),
                 Cr3::read().1,
             );
         }
