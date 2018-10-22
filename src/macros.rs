@@ -1,7 +1,9 @@
 //! Internal macros used by the kernel
 //! (*e.g.* our implementation of `print!`/`println!`).
 
-use core::fmt;
+use arch::x86_64::device::vga_console::WRITER;
+use arch::x86_64::interrupts;
+use core::fmt::{self, Write};
 
 #[macro_export]
 macro_rules! print {
@@ -15,10 +17,9 @@ macro_rules! print {
 /// # TODO
 /// abstract this.
 pub fn print(args: fmt::Arguments) {
-    use core::fmt::Write;
-    let _ = ::arch::x86_64::device::vga_console::WRITER
-        .lock()
-        .write_fmt(args);
+    interrupts::without_interrupts(|| {
+        let _ = WRITER.lock().write_fmt(args);
+    });
 }
 
 #[macro_export]

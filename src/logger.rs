@@ -1,6 +1,7 @@
 //! A basic console logging backend for the `log` crate.
 
 use arch::x86_64::device::serial::COM1;
+use arch::x86_64::interrupts;
 use log;
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 
@@ -31,14 +32,15 @@ impl Log for KernelLogger {
             #[cfg(feature = "logging-serial")]
             {
                 use core::fmt::Write;
-                writeln!(COM1.write(), "[{}]: {}", record.level(), record.args()).unwrap();
+                interrupts::without_interrupts(|| {
+                    writeln!(COM1.write(), "[{}]: {}", record.level(), record.args()).unwrap()
+                });
             }
             #[cfg(feature = "logging-console")]
             {
                 use arch::x86_64::device::vga_console::{CharStyle, Color, WRITER};
                 use core::fmt::Write;
 
-                let mut wtr = WRITER.lock();
                 let sty = CharStyle::new(
                     match record.level() {
                         Level::Error => Color::Red,
@@ -49,9 +51,13 @@ impl Log for KernelLogger {
                     },
                     Color::DarkGray,
                 );
-                write!(wtr.styled().set_style(sty), "{:>5}", record.level()).unwrap();
 
-                writeln!(wtr, ": {}", record.args()).unwrap();;
+                interrupts::without_interrupts(|| {
+                    let mut wtr = WRITER.lock();
+                    write!(wtr.styled().set_style(sty), "{:>5}", record.level()).unwrap();
+
+                    writeln!(wtr, ": {}", record.args()).unwrap();
+                });
             }
         }
     }
