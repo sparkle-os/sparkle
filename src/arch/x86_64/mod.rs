@@ -8,6 +8,7 @@ pub mod memory;
 use self::device::{pic, pit, vga_console};
 use logger;
 use multiboot2;
+use x86_64;
 
 /// `x86_64`-specific kernel entry point, called by the bootstrapping assembly stub.
 #[no_mangle]
@@ -32,6 +33,9 @@ pub unsafe extern "C" fn _start(multiboot_info_pointer: usize) -> ! {
 
     pit::init();
     info!("int: initialized pit");
+
+    x86_64::instructions::interrupts::enable();
+    info!("int: sti (enabled interrupts)");
 
     ::kernel_main();
 }
