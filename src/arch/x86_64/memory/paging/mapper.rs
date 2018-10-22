@@ -2,11 +2,11 @@
 use super::table::{self, EntryFlags, Level4, Table, ENTRY_COUNT};
 use super::{Frame, Page, PhysicalAddress, VirtualAddress};
 use arch::x86_64::memory::FrameAllocator;
-use core::ptr::Unique;
+use core::ptr::NonNull;
 
 /// Owns the top-level active page table (P4).
 pub struct Mapper {
-    p4: Unique<Table<Level4>>,
+    p4: NonNull<Table<Level4>>,
 }
 
 impl Mapper {
@@ -14,7 +14,7 @@ impl Mapper {
     /// Since we cannot guarantee this trivially, the constructor is unsafe.
     pub unsafe fn new() -> Mapper {
         Mapper {
-            p4: Unique::new_unchecked(table::P4),
+            p4: NonNull::new_unchecked(table::P4),
         }
     }
 
