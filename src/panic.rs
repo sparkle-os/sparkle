@@ -1,7 +1,7 @@
 use core::panic::PanicInfo;
 
 /// Dumps panics to the console.
-#[panic_implementation]
+#[panic_handler]
 #[no_mangle]
 pub extern "C" fn panic(info: &PanicInfo) -> ! {
     #[cfg(feature = "panic-console")]
