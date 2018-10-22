@@ -43,7 +43,7 @@ $(kernel): $(asm_obj) $(rs_kernel)
 
 .PHONY: $(rs_kernel) # always run this dep
 $(rs_kernel):
-	cargo xbuild --target $(rs_target)
+	cargo xbuild --target $(rs_target).json
 
 build/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
