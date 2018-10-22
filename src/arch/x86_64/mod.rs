@@ -28,7 +28,7 @@ pub unsafe extern "C" fn _start(multiboot_info_pointer: usize) -> ! {
     interrupts::init(&mut mem_ctrl);
     info!("int: initialized idt");
 
-    pic::PICS.lock().init();
+    pic::PICS.write().init();
     info!("int: initialized pic");
 
     pit::init();

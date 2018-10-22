@@ -1,9 +1,9 @@
 //! Driver for the Programmable Interrupt Controller (Intel 8259A).
 
-use spin::Mutex;
+use spin::RwLock;
 use x86_64::instructions::port::Port;
 
-pub static PICS: Mutex<ChainedPics> = Mutex::new(ChainedPics::new(0x20, 0x28)); // offsets
+pub static PICS: RwLock<ChainedPics> = RwLock::new(ChainedPics::new(0x20, 0x28)); // offsets
 
 // command constants to send
 const PIC_OCW2_EOI: u8 = 0x20;
@@ -13,8 +13,8 @@ const PIC_ICW1_ICW4: u8 = 0x01;
 const PIC_ICW4_MODE_8086: u8 = 0x01;
 
 pub struct ChainedPics {
-    primary: Pic,
-    secondary: Pic,
+    pub primary: Pic,
+    pub secondary: Pic,
 }
 
 impl ChainedPics {
@@ -51,16 +51,16 @@ impl ChainedPics {
         self.secondary.set_irq_mask(0);
     }
 
-    /// Do any of the PICs in this chain handle the given IRQ?
-    pub fn handles_irq(&self, irq: u8) -> bool {
+    /// Do any of the PICs in this chain handle the given INT?
+    pub fn handles_int(&self, irq: u8) -> bool {
         [&self.secondary, &self.primary]
             .iter()
-            .any(|p| p.handles_irq(irq))
+            .any(|p| p.handles_int(irq))
     }
 
-    pub unsafe fn eoi(&mut self, irq: u8) {
-        if self.handles_irq(irq) {
-            if self.secondary.handles_irq(irq) {
+    pub unsafe fn eoi(&mut self, int: u8) {
+        if self.handles_int(int) {
+            if self.secondary.handles_int(int) {
                 self.secondary.eoi();
             }
 
@@ -73,7 +73,7 @@ pub struct Pic {
     cmd: Port<u8>,
     data: Port<u8>,
 
-    offset: u8,
+    pub offset: u8,
 }
 
 impl Pic {
@@ -89,8 +89,8 @@ impl Pic {
         self.cmd.write(PIC_OCW2_EOI);
     }
 
-    pub fn handles_irq(&self, irq: u8) -> bool {
-        self.offset <= irq && irq < self.offset + 8
+    pub fn handles_int(&self, int: u8) -> bool {
+        self.offset <= int && int < self.offset + 8
     }
 
     unsafe fn get_irq_mask(&self) -> u8 {

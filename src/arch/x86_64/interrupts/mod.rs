@@ -18,6 +18,9 @@ use self::gdt::Gdt;
 
 const IST_DOUBLE_FAULT: usize = 0;
 
+const IRQ_BASE: usize = 0x20;
+static INT_TIMER_PIT: usize = IRQ_BASE + 0x0;
+
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
         let mut idt = InterruptDescriptorTable::new();
@@ -29,7 +32,7 @@ lazy_static! {
                 .set_stack_index(IST_DOUBLE_FAULT as u16);
         }
 
-        idt[32].set_handler_fn(timer_handler);
+        idt[INT_TIMER_PIT].set_handler_fn(timer_handler);
 
         idt
     };
@@ -89,5 +92,5 @@ extern "x86-interrupt" fn double_fault_handler(
 }
 
 extern "x86-interrupt" fn timer_handler(_stack_frame: &mut ExceptionStackFrame) {
-    unsafe { PICS.lock().eoi(32); }
+    unsafe { PICS.write().eoi(INT_TIMER_PIT as u8); }
 }
