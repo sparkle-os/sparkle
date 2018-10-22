@@ -1,9 +1,9 @@
 //! Driver for the Programmable Interrupt Controller (Intel 8259A).
 
-use x86_64::instructions::port::Port;
 use spin::Mutex;
+use x86_64::instructions::port::Port;
 
-pub static PICS: Mutex<ChainedPics> = Mutex::new(ChainedPics::new(0x20, 0xA0));
+pub static PICS: Mutex<ChainedPics> = Mutex::new(ChainedPics::new(0x20, 0x28)); // offsets
 
 // command constants to send
 const PIC_OCW2_EOI: u8 = 0x20;
@@ -18,10 +18,10 @@ pub struct ChainedPics {
 }
 
 impl ChainedPics {
-    const fn new(primary_port: u16, secondary_port: u16) -> ChainedPics {
+    const fn new(primary_offset: u8, secondary_offset: u8) -> ChainedPics {
         ChainedPics {
-            primary: Pic::new(primary_port),
-            secondary: Pic::new(secondary_port),
+            primary: Pic::new(0x20, primary_offset),
+            secondary: Pic::new(0xA0, secondary_offset),
         }
     }
 
@@ -35,8 +35,8 @@ impl ChainedPics {
         self.secondary.cmd.write(PIC_ICW1_INIT | PIC_ICW1_ICW4);
 
         // ICW2: set offsets
-        self.primary.data.write(0x20);
-        self.secondary.data.write(0x28);
+        self.primary.data.write(self.primary.offset);
+        self.secondary.data.write(self.secondary.offset);
 
         // ICW3: configure PIC cascading. IRQ 2 [via PC99] is used to chain to the secondary PIC.
         self.primary.data.write(1 << 2); // the IRQ 2 line is used for cascading
@@ -50,23 +50,47 @@ impl ChainedPics {
         self.primary.set_irq_mask(0);
         self.secondary.set_irq_mask(0);
     }
+
+    /// Do any of the PICs in this chain handle the given IRQ?
+    pub fn handles_irq(&self, irq: u8) -> bool {
+        [&self.secondary, &self.primary]
+            .iter()
+            .any(|p| p.handles_irq(irq))
+    }
+
+    pub unsafe fn eoi(&mut self, irq: u8) {
+        if self.handles_irq(irq) {
+            if self.secondary.handles_irq(irq) {
+                self.secondary.eoi();
+            }
+
+            self.primary.eoi();
+        }
+    }
 }
 
 pub struct Pic {
     cmd: Port<u8>,
     data: Port<u8>,
+
+    offset: u8,
 }
 
 impl Pic {
-    const fn new(port: u16) -> Pic {
+    const fn new(port: u16, offset: u8) -> Pic {
         Pic {
             cmd: Port::new(port),
             data: Port::new(port + 1),
+            offset,
         }
     }
 
     pub unsafe fn eoi(&mut self) {
         self.cmd.write(PIC_OCW2_EOI);
+    }
+
+    pub fn handles_irq(&self, irq: u8) -> bool {
+        self.offset <= irq && irq < self.offset + 8
     }
 
     unsafe fn get_irq_mask(&self) -> u8 {
