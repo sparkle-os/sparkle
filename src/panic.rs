@@ -1,9 +1,12 @@
 use core::panic::PanicInfo;
+use x86_64;
 
 /// Dumps panics to the console.
 #[panic_handler]
 #[no_mangle]
 pub extern "C" fn panic(info: &PanicInfo) -> ! {
+    x86_64::instructions::interrupts::disable();
+
     #[cfg(feature = "panic-console")]
     {
         use ::arch::x86_64::device::vga_console;
