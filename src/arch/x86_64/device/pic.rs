@@ -2,10 +2,8 @@
 
 use x86_64::instructions::port::Port;
 
-// using the terminology from Intel's 1988 datasheet,
-// "8259A PROGRAMMABLE INTERRUPT CONTROLLER".
-pub const MASTER: Pic = Pic::new(0x20);
-pub const SLAVE: Pic = Pic::new(0xA0);
+pub const PRIMARY: Pic = Pic::new(0x20);
+pub const SECONDARY: Pic = Pic::new(0xA0);
 
 // command constants to send
 const PIC_OCW2_EOI: u8 = 0x20;
@@ -20,24 +18,24 @@ const PIC_ICW4_MODE_8086: u8 = 0x01;
 /// This remaps the master PIC to IRQs 0x20..0x28, and the slave to 0x28..0x36.
 pub unsafe fn init() {
     // ICW1: start initialization, signal that we want the ICW4 phase
-    MASTER.cmd.write(PIC_ICW1_INIT | PIC_ICW1_ICW4);
-    SLAVE.cmd.write(PIC_ICW1_INIT | PIC_ICW1_ICW4);
+    PRIMARY.cmd.write(PIC_ICW1_INIT | PIC_ICW1_ICW4);
+    SECONDARY.cmd.write(PIC_ICW1_INIT | PIC_ICW1_ICW4);
 
     // ICW2: set offsets
-    MASTER.data.write(0x20);
-    SLAVE.data.write(0x28);
+    PRIMARY.data.write(0x20);
+    SECONDARY.data.write(0x28);
 
-    // ICW3: configure PIC cascading. IRQ 2 [via PC99] is used to chain to the slave PIC.
-    MASTER.data.write(1 << 2); // the IRQ 2 line is used for cascading
-    SLAVE.data.write(2); // the slave has an ID of 2
+    // ICW3: configure PIC cascading. IRQ 2 [via PC99] is used to chain to the secondary PIC.
+    PRIMARY.data.write(1 << 2); // the IRQ 2 line is used for cascading
+    SECONDARY.data.write(2); // the secondary PIC has an ID of 2
 
     // ICW4: put the PICs into 8086 mode (EOIs are required)
-    MASTER.data.write(PIC_ICW4_MODE_8086);
-    SLAVE.data.write(PIC_ICW4_MODE_8086);
+    PRIMARY.data.write(PIC_ICW4_MODE_8086);
+    SECONDARY.data.write(PIC_ICW4_MODE_8086);
 
     // initialization done. clear IRQ masks
-    MASTER.set_irq_mask(0);
-    SLAVE.set_irq_mask(0);
+    PRIMARY.set_irq_mask(0);
+    SECONDARY.set_irq_mask(0);
 }
 
 pub struct Pic {
