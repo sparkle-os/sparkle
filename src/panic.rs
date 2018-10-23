@@ -1,3 +1,5 @@
+//! Sparkle's `panic_handler` implementation.
+
 use core::panic::PanicInfo;
 use x86_64;
 

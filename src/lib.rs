@@ -1,3 +1,4 @@
+//! The Sparkle microkernel.
 #![feature(
     asm,
     ptr_internals,
@@ -9,6 +10,7 @@
     panic_implementation,
     panic_info_message
 )]
+#![warn(missing_docs)]
 #![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(large_digit_groups))]
 

@@ -3,6 +3,7 @@
 use spin::RwLock;
 use x86_64::instructions::port::Port;
 
+/// A static, locked access point for the default chained pair of PICs on every x86 motherboard.
 pub static PICS: RwLock<ChainedPics> = RwLock::new(ChainedPics::new(0x20, 0x28)); // offsets
 
 // command constants to send
@@ -12,8 +13,11 @@ const PIC_ICW1_INIT: u8 = 0x10;
 const PIC_ICW1_ICW4: u8 = 0x01;
 const PIC_ICW4_MODE_8086: u8 = 0x01;
 
+/// A pair of chained PICs.
 pub struct ChainedPics {
+    /// The first PIC, attached directly to the CPU.
     pub primary: Pic,
+    /// The second PIC, attached to the first PIC.
     pub secondary: Pic,
 }
 
@@ -58,6 +62,8 @@ impl ChainedPics {
             .any(|p| p.handles_int(irq))
     }
 
+    /// Given an interrupt, send an end-of-interrupt message to the
+    /// PICs in this chain which should hear it.
     pub unsafe fn eoi(&mut self, int: u8) {
         if self.handles_int(int) {
             if self.secondary.handles_int(int) {
@@ -69,10 +75,12 @@ impl ChainedPics {
     }
 }
 
+/// A single PIC.
 pub struct Pic {
     cmd: Port<u8>,
     data: Port<u8>,
 
+    /// The offset with which this PIC maps its IRQs to interrupts (ie, what INT does IRQ0 become?).
     pub offset: u8,
 }
 
@@ -85,19 +93,29 @@ impl Pic {
         }
     }
 
+    /// Send an End Of Interrupt message to this PIC.
     pub unsafe fn eoi(&mut self) {
         self.cmd.write(PIC_OCW2_EOI);
     }
 
+    /// Returns true if this PIC handles the given interrupt.
     pub fn handles_int(&self, int: u8) -> bool {
         self.offset <= int && int < self.offset + 8
     }
 
-    unsafe fn get_irq_mask(&self) -> u8 {
+    /// Get the IRQ mask of this PIC.
+    ///
+    /// Each bit in the IRQ mask is 0 if that IRQ is enabled, and 1 if that IRQ is masked;
+    /// masked IRQs will not trigger interrupts.
+    pub unsafe fn get_irq_mask(&self) -> u8 {
         self.data.read()
     }
 
-    unsafe fn set_irq_mask(&mut self, mask: u8) {
+    /// Get the IRQ mask of this PIC.
+    ///
+    /// Each bit in the IRQ mask is 0 if that IRQ is enabled, and 1 if that IRQ is masked;
+    /// masked IRQs will not trigger interrupts.
+    pub unsafe fn set_irq_mask(&mut self, mask: u8) {
         self.data.write(mask)
     }
 }

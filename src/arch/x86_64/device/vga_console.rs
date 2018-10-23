@@ -6,6 +6,7 @@ use volatile::Volatile;
 use x86_64::instructions::port::Port;
 
 lazy_static! {
+    /// A static, locked access point to the BIOS-provided VGA character buffer.
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_pos: 0,
         row_pos: 0,
@@ -14,7 +15,7 @@ lazy_static! {
     });
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, missing_docs)]
 #[derive(Clone, Copy, Debug)]
 #[repr(u8)]
 pub enum Color {
@@ -40,6 +41,7 @@ pub enum Color {
 #[derive(Clone, Copy, Debug)]
 pub struct CharStyle(u8);
 impl CharStyle {
+    /// Creates a new [CharStyle], with given `foreground` and `background`.
     pub const fn new(foreground: Color, background: Color) -> CharStyle {
         CharStyle((background as u8) << 4 | (foreground as u8))
     }
@@ -115,14 +117,17 @@ impl Writer {
         }
     }
 
+    /// Sets the current style we're writing with.
     pub fn set_style(&mut self, style: CharStyle) {
         self.style = style;
     }
 
+    /// Gets the current style we're writing with.
     pub fn style(&self) -> CharStyle {
         self.style
     }
 
+    /// Returns a [StyledWriter], which scopes the style it's set to.
     pub fn styled(&mut self) -> StyledWriter {
         StyledWriter {
             style: self.style,
@@ -187,6 +192,7 @@ impl Writer {
         self.row_pos = BUFFER_HEIGHT - 1;
     }
 
+    /// Write a string with a given style.
     pub fn write_str_with_style(&mut self, s: &str, style: CharStyle) {
         for byte in s.bytes() {
             self.write_byte(byte, style);
@@ -207,12 +213,15 @@ impl fmt::Write for Writer {
     }
 }
 
+/// A VGA buffer writer which scopes its style; any changes made to its style
+/// will not affect the parent [Writer] it was derived from.
 pub struct StyledWriter<'a> {
     inner: &'a mut Writer,
     style: CharStyle,
 }
 
 impl<'a> StyledWriter<'a> {
+    /// Sets the current style we're writing with.
     pub fn set_style(mut self, style: CharStyle) -> Self {
         self.style = style;
         self

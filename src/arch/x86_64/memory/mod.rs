@@ -14,6 +14,7 @@ use self::paging::{table, ActivePageTable, Frame, FrameAllocator, Page};
 
 pub use self::stack_allocator::{Stack, StackAllocator};
 
+/// Owns the active table, the frame allocator, and the stack allocator.
 pub struct MemoryController<A>
 where
     A: FrameAllocator,
@@ -36,6 +37,7 @@ where
     }
 }
 
+/// Initializes the memory subsystem, returning a [MemoryController] owning everything we set up.
 pub fn init(boot_info: &BootInformation) -> MemoryController<AreaFrameAllocator> {
     assert_first_call!("memory::init() can only be called once!");
 

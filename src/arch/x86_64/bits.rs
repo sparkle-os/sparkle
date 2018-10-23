@@ -1,3 +1,7 @@
+//! Shorthand for flipping CPU bits.
+
+// TODO: stuff in here should be unsafe; NXE/WRPROT could compromise memory safety.
+
 /// Turn on no-execute page protection.
 pub fn enable_nxe() {
     use x86_64::registers::model_specific::{Efer, EferFlags};

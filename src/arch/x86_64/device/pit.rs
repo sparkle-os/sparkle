@@ -17,6 +17,7 @@ pub const FREQ: u32 = 1193182;
 /// The target frequency to tick at, in _Hz_.
 pub const TICK_FREQ: u32 = 20;
 
+/// Initialize the PIT.
 pub unsafe fn init() {
     const DIVISOR: u16 = (FREQ / TICK_FREQ) as u16;
 

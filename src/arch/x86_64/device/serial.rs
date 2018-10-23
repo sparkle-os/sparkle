@@ -13,12 +13,17 @@ macro_rules! port {
 
 port!(COM1, 0x3f8);
 
+/// A serial port.
 pub struct SerialPort {
     data_port: Port<u8>,
     status_port: Port<u8>,
 }
 
 impl SerialPort {
+    /// Construct a SerialPort at the base I/O port `port`, and initialize it.
+    ///
+    /// # TODO
+    /// * initializes the baud rate to 38400 baud. this should not be hardcoded.
     pub fn new(port: u16) -> SerialPort {
         unsafe {
             // Disable all interrupts

@@ -41,6 +41,7 @@ lazy_static! {
 static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<Gdt> = Once::new();
 
+/// Initializes the interrupt subsystem, using the passed `memory_controller` to allocate interrupt stacks.
 pub fn init<A: FrameAllocator>(memory_controller: &mut MemoryController<A>) {
     use x86_64::instructions::segmentation::set_cs;
     use x86_64::instructions::tables::load_tss;

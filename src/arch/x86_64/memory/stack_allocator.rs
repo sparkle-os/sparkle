@@ -1,6 +1,10 @@
 use super::paging::table::EntryFlags;
 use super::paging::{ActivePageTable, Frame, FrameAllocator, Page, PageIter};
 
+/// A stack.
+///
+/// # Notes
+/// x86 stacks start at a `top` address (higher in memory than the `bottom` address) and grow downwards to `bottom`
 #[derive(Debug)]
 pub struct Stack {
     top: usize,
@@ -17,19 +21,24 @@ impl Stack {
         Stack { top, bottom }
     }
 
+    /// Returns the address of the top of this stack.
     pub fn top(&self) -> usize {
         self.top
     }
+
+    /// Returns the address of the bottom of this stack.
     pub fn bottom(&self) -> usize {
         self.bottom
     }
 }
 
+/// An allocator which allocates [Stack]s.
 pub struct StackAllocator {
     range: PageIter,
 }
 
 impl StackAllocator {
+    /// Creates a new stack allocator, allocating stacks in the given `page_range`.
     pub fn new(page_range: PageIter) -> StackAllocator {
         StackAllocator { range: page_range }
     }
