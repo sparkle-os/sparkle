@@ -17,16 +17,18 @@ pub const FREQ: u32 = 1193182;
 /// The target frequency to tick at, in _Hz_.
 pub const TICK_FREQ: u32 = 20;
 
-/// Initialize the PIT.
-pub unsafe fn init() {
-    const DIVISOR: u16 = (FREQ / TICK_FREQ) as u16;
-
-    PIT.mode.write(ACCESS_LOHI | SELECT_CHAN0 | MODE_2);
-    PIT.chan0.write((DIVISOR & 0xff) as u8);
-    PIT.chan0.write((DIVISOR >> 8) as u8);
-}
-
 pub struct Pit {
     chan0: Port<u8>,
     mode: Port<u8>,
+}
+
+impl Pit {
+    /// Initialize the PIT.
+    pub unsafe fn init(&mut self) {
+        const DIVISOR: u16 = (FREQ / TICK_FREQ) as u16;
+
+        self.mode.write(ACCESS_LOHI | SELECT_CHAN0 | MODE_2);
+        self.chan0.write((DIVISOR & 0xff) as u8);
+        self.chan0.write((DIVISOR >> 8) as u8);
+    }
 }

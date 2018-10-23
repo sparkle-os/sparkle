@@ -31,7 +31,7 @@ pub unsafe extern "C" fn _start(multiboot_info_pointer: usize) -> ! {
     pic::PICS.write().init();
     info!("int: initialized pic");
 
-    pit::init();
+    pit::PIT.init();
     info!("int: initialized pit");
 
     x86_64::instructions::interrupts::enable();
