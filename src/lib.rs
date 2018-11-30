@@ -7,7 +7,6 @@
     alloc,
     allocator_api,
     abi_x86_interrupt,
-    panic_implementation,
     panic_info_message
 )]
 #![no_std]
