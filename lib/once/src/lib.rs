@@ -10,8 +10,8 @@ macro_rules! assert_first_call {
     };
 
     ($($arg:tt)+) => {{
-        use ::core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
-        static CALLED: AtomicBool = ATOMIC_BOOL_INIT;
+        use ::core::sync::atomic::{AtomicBool, Ordering};
+        static CALLED: AtomicBool = AtomicBool::new(false);
         let called = CALLED.swap(true, Ordering::Relaxed);
         assert!(!called, $($arg)+);
     }};
