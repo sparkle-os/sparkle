@@ -56,7 +56,7 @@ impl ChainedPics {
     }
 
     /// Do any of the PICs in this chain handle the given INT?
-    pub fn handles_int(&self, irq: u8) -> bool {
+    pub fn handles_int(&mut self, irq: u8) -> bool {
         [&self.secondary, &self.primary]
             .iter()
             .any(|p| p.handles_int(irq))
@@ -107,7 +107,7 @@ impl Pic {
     ///
     /// Each bit in the IRQ mask is 0 if that IRQ is enabled, and 1 if that IRQ is masked;
     /// masked IRQs will not trigger interrupts.
-    pub unsafe fn get_irq_mask(&self) -> u8 {
+    pub unsafe fn get_irq_mask(&mut self) -> u8 {
         self.data.read()
     }
 

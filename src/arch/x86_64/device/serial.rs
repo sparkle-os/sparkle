@@ -49,17 +49,17 @@ impl SerialPort {
     }
 
     /// Returns `true` when the UART has new data available to read
-    pub fn has_new_data(&self) -> bool {
+    pub fn has_new_data(&mut self) -> bool {
         unsafe { self.status_port.read() & 1 != 0 }
     }
 
     /// Returns `true` when the UART still has queued data to send
-    pub fn is_tx_empty(&self) -> bool {
+    pub fn is_tx_empty(&mut self) -> bool {
         unsafe { self.status_port.read() & 0x20 == 0x20 }
     }
 
     /// Reads a byte from the UART, blocking until data is available.
-    pub fn read_byte(&self) -> u8 {
+    pub fn read_byte(&mut self) -> u8 {
         while !self.has_new_data() {}
         unsafe { self.data_port.read() }
     }
