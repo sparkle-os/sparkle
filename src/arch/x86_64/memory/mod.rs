@@ -38,7 +38,7 @@ where
 }
 
 /// Initializes the memory subsystem, returning a [MemoryController] owning everything we set up.
-pub fn init(boot_info: &BootInformation) -> MemoryController<AreaFrameAllocator> {
+pub fn init<'a>(boot_info: &'a BootInformation) -> MemoryController<AreaFrameAllocator> {
     assert_first_call!("memory::init() can only be called once!");
 
     let memory_map_tag = boot_info
