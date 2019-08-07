@@ -7,22 +7,22 @@ authors = ["Erin Moon <erin@hashbang.sh>"]
 crate-type = ["staticlib"]
 
 [dependencies]
-rlibc = "1.0"
-volatile = "0.2"
-spin = "0.4.6"
-x86_64 = "0.3.4"
-multiboot2 = "0.7"
-bitflags = "1.0"
-linked_list_allocator = "0.6"
-raw-cpuid = "6.1"
-bit_field = "0.9"
+rlibc = "1.0.0"
+volatile = "0.2.6"
+spin = "0.5.0"
+x86_64 = "0.7.4"
+multiboot2 = "0.8.1"
+bitflags = "1.1.0"
+linked_list_allocator = "0.6.4"
+raw-cpuid = "6.1.0"
+bit_field = "0.10.0"
 
 [dependencies.log]
-version = "0.4"
+version = "0.4.8"
 default-features = false
 
 [dependencies.lazy_static]
-version = "1.0"
+version = "1.3.0"
 features = ["spin_no_std"]
 
 [dependencies.once]
