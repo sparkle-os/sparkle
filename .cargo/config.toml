@@ -1,0 +1,11 @@
+# this is a horrendous hack that i'm stealing from Eliza (@hawkw).
+# effectively, setting up our custom build tool (kamaji) as the runner lets us do post-build actions;
+# we get the path to the built binary as the first arg to the runner. then, by adding `-- additional ... args ...`
+# to `run` invocations, we can pass additional arguments into the runner *after the built binary path*.
+# cargo should really just support postbuild invocations because this sucks this SUCKS
+[target.'cfg(all(target_arch="x86_64", target_os="none"))']
+# something something crappy build tool call that CBT
+runner = "cargo run --package kamaji --"
+
+[alias]
+kamaji = "run -Z build-std=core,alloc,compiler_builtins -Z build-std-features=compiler-builtins-mem --target=x86_64-sparkle.json --"

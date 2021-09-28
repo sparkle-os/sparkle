@@ -1,6 +1,0 @@
-[package]
-name = "once"
-version = "0.1.0"
-authors = ["Erin <erin@hashbang.sh>"]
-
-[dependencies]

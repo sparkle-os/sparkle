@@ -1,0 +1,10 @@
+[package]
+name = "kamaji"
+description = "build tooling for sparkle"
+authors = ["erin moon <erin@hecke.rs>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+structopt = "0.3"
+color-eyre = "0.5"
