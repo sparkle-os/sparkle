@@ -7,11 +7,16 @@ members = [
 name = "sparkle-kernel"
 version = "0.1.0"
 authors = ["Erin Moon <erin@hashbang.sh>"]
+edition = "2021"
 
 [dependencies]
 x86_64 = "0.14"
+bootloader = "0.10"
 
 [features]
+
+[package.metadata.bootloader]
+map-framebuffer = true
 
 [profile.dev]
 panic = "abort"
