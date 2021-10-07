@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 structopt = "0.3"
 color-eyre = "0.5"
+tracing = "0.1"
+tracing-subscriber = "0.2"
+bootloader-locator = "0.0.4"
+locate-cargo-manifest = "0.2"
+owo-colors = "2.1"
